@@ -24,6 +24,9 @@
 #include "fluid_simulator.h"
 #include "particle.h"
 
+using namespace std;
+using namespace glm;
+
 class Grid {
 public:
     float h; // size of cell
@@ -36,6 +39,7 @@ public:
     vector<Particle> particles;
     vector<vector<vector<vector<Particle> > > > grid; // 3d vector of vectors of particles
     Grid (float, float, float, float);
+    Grid (void);
     void setParticles(vector<Particle>);
     vector<Particle> getNeighbors(Particle);
 protected: //?? maybe private dgaf
