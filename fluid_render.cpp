@@ -31,7 +31,7 @@ public:
 Viewport viewport;
 float gridX, gridY, gridZ, cellSize;
 Grid grid;
-Vector<Particle> particles;
+vector<Particle> particles;
 Simulator simulator;
 
 //****************************************************
@@ -41,8 +41,8 @@ void initScene(){
     glClearColor (0.0, 0.0, 0.0, 0.0);
     glClearDepth(1.0);
     
-    grid = new Grid(gridX, gridY, gridZ, cellSize);
-    simulator = new Simulator(particles, grid);
+    Grid grid(gridX, gridY, gridZ, cellSize);
+    Simulator simulator(&particles, grid);
 }
 
 //****************************************************
@@ -81,9 +81,9 @@ void myDisplay(void) {
     
     // Render all particles
     glBegin(GL_POINTS);
-    for (vector<Particle> particle = particles.begin(); particle != particles.end(); ++particle) {
-        glColor3fv(0,0,1);
-        glVertex3fv(particle.pos.x,particle.pos.y,particle.pos.z);
+    for (Particle particle = particles.begin(); particle != particles.end(); ++particle) {
+        glColor3f(0,0,1);
+        glVertex3f(particle.pos.x,particle.pos.y,particle.pos.z);
     }
     glEnd();
     
@@ -119,13 +119,13 @@ int main(int argc, char *argv[]) {
     cellSize = 100;
     
     // Cutty scene set up, later make robust function
-    Particle particle1(vec3(1,0,0),vec3(1,0,0),vec3(1,0,0),vec(1,0,0),3.0,3.0,3.0);
+    Particle particle1(vec3(1,0,0),vec3(1,0,0),vec3(1,0,0),vec3(1,0,0),3.0,3.0,3.0);
     particles.push_back(particle1);
-    Particle particle2(vec3(100,100,100),vec3(100,100,100),vec3(100,100,100),vec(100,100,100),4.0,4.0,4.0);
+    Particle particle2(vec3(100,100,100),vec3(100,100,100),vec3(100,100,100),vec3(100,100,100),4.0,4.0,4.0);
     particles.push_back(particle2);
-    Particle particle3(vec3(500,500,0),vec3(500,500,0),vec3(500,500,0),vec(500,500,0),7.0,7.0,7.0);
+    Particle particle3(vec3(500,500,0),vec3(500,500,0),vec3(500,500,0),vec3(500,500,0),7.0,7.0,7.0);
     particles.push_back(particle3);
-    Particle particle4(vec3(0,300,700),vec3(0,300,700),vec3(0,300,700),vec(0,300,700),10.0,10.0,10.0);
+    Particle particle4(vec3(0,300,700),vec3(0,300,700),vec3(0,300,700),vec3(0,300,700),10.0,10.0,10.0);
     particles.push_back(particle4);
     
     

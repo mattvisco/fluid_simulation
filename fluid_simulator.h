@@ -31,4 +31,17 @@
 #define PI 3.14159265
 #define epsilon .0001
 
+using namespace std;
+using namespace glm;
+
+class Simulator {
+public:
+    vector<Particle>* particles;
+    Grid curr_grid;
+    Grid new_grid;
+    Simulator ();
+    Simulator (vector<Particle>*, Grid);
+    void simulate();
+};
+
 #endif /* defined(____fluid_simulator__) */
