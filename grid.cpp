@@ -6,6 +6,8 @@
 //  
 //
 
+#include "grid.h"
+
 Grid::Grid(float xdim, float ydim, float zdim, float h) {
     Grid::xdim = xdim;
     Grid::ydim = ydim;
