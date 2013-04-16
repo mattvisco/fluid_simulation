@@ -1,12 +1,12 @@
 //
-//  Particle.cpp
+//  particle.cpp
 //  
 //
 //  Created by Thomas Rodman Yopes on 4/15/13.
 //
 //
 
-#include "Particle.h"
+#include "particle.h"
 #include <vector>
 #include "glm/glm.hpp"
 
