@@ -6,11 +6,6 @@
 //  
 //
 
-#include <iostream>
-#include <math.h>
-#include "fluid_simulator.h"
-#include "particle.h"
-
 using namespace std;
 using namespace glm;
 
