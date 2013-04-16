@@ -66,15 +66,15 @@ void Grid::setParticles(vector<Particle> particles) {
     for (int i = 0; i < particles.size(); i++) {
         vec3 cell = getCell(particles[i].pos[0], particles[i].pos[1], particles[i].pos[2]);
         // store copies for spacial locality - I DONT KNOW IF THIS IS HAPPENING? ??!!?1
-        grid[cell[0]][cell[1]][cell[2]].push_back(particles[i]);
+        grid[(int)cell[0]][(int)cell[1]][(int)cell[2]].push_back(particles[i]);
     }
 }
 
 // get the cell of a particle at position (x,y,z) in space
 vec3 Grid::getCell(float x, float y, float z) {
-    int xcell = floor(x/h);
-    int ycell = floor(y/h);
-    int zcell = floor(z/h);
+    float xcell = (float)floor(x/h);
+    float ycell = (float)floor(y/h);
+    float zcell = (float)floor(z/h);
     vec3 cell(xcell, ycell, zcell);
     return cell;
 }
