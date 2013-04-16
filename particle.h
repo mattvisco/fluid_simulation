@@ -10,5 +10,10 @@
 #define ____particle__
 
 #include <iostream>
+#include <vector>
+#include <fstream>
+#include <sstream>
+#include <cmath>
+#include "glm/glm.hpp"
 
 #endif /* defined(____particle__) */
