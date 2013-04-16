@@ -11,9 +11,9 @@ endif
 	
 RM = /bin/rm -f 
 all: main 
-main: fluid.o 
-	$(CC) $(CFLAGS) -o fluid fluid.o $(LDFLAGS) 
-fluid.o: fluid.cpp
-	$(CC) $(CFLAGS) -c fluid.cpp -o fluid.o
+main: fluid_render.o 
+	$(CC) $(CFLAGS) -o fluid_render fluid_render.o $(LDFLAGS) 
+fluid_render.o: fluid_render.cpp
+	$(CC) $(CFLAGS) -c fluid_render.cpp -o fluid_render.o
 clean:
-	$(RM) *.o fluid
+	$(RM) *.o fluid_render
