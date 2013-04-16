@@ -6,7 +6,7 @@
 //
 //
 
-#include "Particle.h"
+#include "particle.h"
 #include <vector>
 #include "glm/glm.hpp"
 
