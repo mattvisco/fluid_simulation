@@ -81,9 +81,9 @@ void myDisplay(void) {
     
     // Render all particles
     glBegin(GL_POINTS);
-    for (Particle particle = particles.begin(); particle != particles.end(); ++particle) {
+    for (vector<Particle>::iterator particle = particles.begin(); particle != particles.end(); ++particle) {
         glColor3f(0,0,1);
-        glVertex3f(particle.pos.x,particle.pos.y,particle.pos.z);
+        glVertex3f(((Particle)*particle).pos.x, ((Particle)*particle).pos.y, ((Particle)*particle).pos.z);
     }
     glEnd();
     

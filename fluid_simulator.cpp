@@ -21,9 +21,9 @@ Simulator::Simulator(vector<Particle>* particles, Grid grid) {
     
 }
 void Simulator::simulate() {
-    for (Particle particle = particles.begin(); particle != particles.end(); ++particle) {
+    for (vector<Particle>::iterator particle = particles.begin(); particle != particles.end(); ++particle) {
         // may have to call *particle -- not sure yet
-        vector<Particle> neighbors = curr_grid.getNeighbors(particle);
+        vector<Particle> neighbors = curr_grid.getNeighbors(*particle);
         
     }
 }
