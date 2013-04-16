@@ -1,5 +1,5 @@
 //
-//  Particle.cpp
+//  particle.cpp
 //  
 //
 //  Created by Thomas Rodman Yopes on 4/15/13.
