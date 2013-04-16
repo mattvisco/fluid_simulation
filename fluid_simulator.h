@@ -15,8 +15,8 @@
 #include <sstream>
 #include <cmath>
 
-#include <particle.h>
-#include <grid.h>
+#include "particle.h"
+#include "grid.h"
 
 #ifdef _WIN32
 #include <windows.h>
