@@ -15,5 +15,5 @@ public:
     vec3 velocity;
     vec3 velocityDifferences;
     float pressure;
-    
+    float h; //size of cell dimension
 };
