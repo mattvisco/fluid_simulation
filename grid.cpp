@@ -1,6 +1,7 @@
 //
 //  grid.cpp
-//  
+//  staggered MAC grid that stores GridCells containing pressures, velocities, and particle locations
+
 //
 //  Created by Justin Kay on 4/15/13.
 //  
