@@ -24,9 +24,6 @@ Grid::Grid(float xdim, float ydim, float zdim, float h) {
         grid[i].resize(ycells);
         for (int j = 0; j < ycells; j++) {
             grid[i][j].resize(zcells);
-            for (int k = 0; k < zcells; k++) {
-                grid[i][j][k] = new vector<Particle>;
-            }
         }
     }
 }
