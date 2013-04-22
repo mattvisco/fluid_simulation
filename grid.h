@@ -35,11 +35,18 @@ public:
     float xdim; // in real world size
     float ydim;
     float zdim;
-    int xcells;
+    int xcells; // number of cells
     int ycells;
     int zcells;
-    vector<Particle> particles;
-    vector<vector<vector<vector<GridCell> > > > grid; // 3d vector of grid cells
+    &vector<Particle> particles;
+    vector<vector<vector<float> > > pressures; 
+    vector<vector<vector<float> > > xvelocityOld; 
+    vector<vector<vector<float> > > yvelocityOld; 
+    vector<vector<vector<float> > > zvelocityOld; 
+    vector<vector<vector<float> > > xvelocityNew;
+    vector<vector<vector<float> > > yvelocityNew;
+    vector<vector<vector<float> > > zvelocityNew;
+    vector<vector<vector<vector<Particle>>>> particleCopies;
     Grid (float, float, float, float);
     Grid (void) {};
     void setParticles(vector<Particle>);

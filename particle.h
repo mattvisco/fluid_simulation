@@ -2,7 +2,7 @@
 //  particle.h
 //  
 //
-//  Created by Thomas Rodman Yopes on 4/15/13.
+//  not created by Thomas Rodman Yopes on 4/15/13.
 //
 //
 
@@ -30,14 +30,10 @@ class Particle {
 public:
     vec3 pos, vel, color, force;
     float mass, den;
+    Particle* copy;
     Particle(vec3 pos, vec3 vel, vec3 color, vec3 force, float mass, float den);
+    Particle(&Particle);
     Particle() {};
-    void setPos(vec3);
-    void setVel(vec3);
-    void setColor(vec3);
-    void setForce(vec3);
-    void setMass(float);
-    void setDen(float);
 };
 
 #endif 

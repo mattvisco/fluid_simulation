@@ -17,30 +17,12 @@ Particle::Particle(vec3 pos, vec3 vel, vec3 color, vec3 force, float mass, float
     Particle::den=den;
 }
 
-void Particle::setPos(vec3 npos){
-    Particle::pos=npos;
+Particle::Particle(&Particle particle) {
+    pos = particle.pos;
+    vel = particle.vel;
+    color = particle.color;
+    force = particle.force;
+    mass = particle.mass;
+    den = particle.den;
+    copy = particle;
 }
-
-void Particle::setVel(vec3 nvel){
-    Particle::vel=nvel;
-}
-
-void Particle::setColor(vec3 ncolor){
-    Particle::color=ncolor;
-}
-
-void Particle::setForce(vec3 nforce){
-    Particle::force=nforce;
-}
-
-void Particle::setMass(float nmass){
-    Particle::mass=nmass;
-}
-
-void Particle::setDen(float nden){
-    Particle::den=nden;
-}
-
-
-
-

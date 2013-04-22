@@ -2,10 +2,10 @@
 //  grid.cpp
 //  staggered MAC grid that stores GridCells containing pressures, velocities, and particle locations
 
-//
-//  Created by Justin Kay on 4/15/13.
-//  
-//
+//  pressures[i][j][k] = pressure[i[j][k]
+//  xvelocityOld[i][j][k] = xvel[i-1/2][j][k]
+//  yvelocityOld[i][j][k] = yvel[i][j-1/2][k]
+//  zvelocityOld[i][j][k] = zvel[i][j][k-1/2]
 
 #include "grid.h"
 
@@ -20,30 +20,50 @@ Grid::Grid(float xdim, float ydim, float zdim, float h) {
     Grid::ycells = (int)ydim/h;
     Grid::zcells = (int)zdim/h;
     
-    // set up size of grid and initialize the linked lists for each cell
-    grid.resize(xcells);
+    // set up each 3d vector and initialize the entries of each cell
+    setupVector(pressures&, xcells, ycells, zcells);
+    setupVector(xvelocityOld&, xcells+1, ycells, zcells);
+    setupVector(yvelocityOld&, xcells, ycells+1, zcells);
+    setupVector(zvelocityOld&, xcells, ycells, zcells+1);
+    
+    // set up each 3d vector and initialize the entries of each cell
+    setupVector(xvelocityNew&, xcells+1, ycells, zcells);
+    setupVector(yvelocityNew&, xcells, ycells+1, zcells);
+    setupVector(zvelocityNew&, xcells, ycells, zcells+1);
+    
+    // set up 3d vector that stores copies of particles
+    particleCopies.resize(xcells);
     for (int i = 0; i < xcells; i++) {
-        grid[i].resize(ycells);
+        particleCopies[i].resize(ycells);
         for (int j = 0; j < ycells; j++) {
-            grid[i][j].resize(zcells);
-            for (int k = 0; k < zcells; k++) {
-                grid[i][j][k] = *(new vector<Particle>);
+            particleCopies[i][j].resize(zcells);
+        }
+    }
+}
+
+void Grid::setupVector(&vector<vector<vector<float>>> vec, int xsize, int ysize, int zsize) {
+    vec.resize(xsize);
+    for (int i = 0; i < xsize; i++) {
+        vec[i].resize(ysize);
+        for (int j = 0; j < ysize; j++) {
+            vec[i][j].resize(zsize);
+            for (int k = 0; k < zsize; k++) {
+                vec[i][j][k] = 0.0f;
             }
         }
     }
 }
 
-// put all the particles in the grid
-void Grid::setParticles(vector<Particle> particles) {
-    Grid::particles = particles;
-    
-    // clear the grid of old particles - free the allocated memory
-    clearGrid();
+// clear particleCopies and copy all new particles into it
+// store a pointer in each particle copy to its original particle (done in Particle constructor)
+void Grid::setupParticleGrid() {
+    // clear the grid of old copies of particles
+    clearParticleCopies();
     
     for (int i = 0; i < particles.size(); i++) {
-        vec3 cell = getCell(particles[i].pos[0], particles[i].pos[1], particles[i].pos[2]);
-        // store copies for spacial locality - I DONT KNOW IF THIS IS HAPPENING? ??!!?1
-        grid[(int)cell[0]][(int)cell[1]][(int)cell[2]].push_back(particles[i]);
+        vec3 cell = getCell(particles[i].pos.x, particles[i].pos.y, particles[i].pos.z);
+        Particle copy(particles[i]);
+        particleCopies[(int)cell.x][(int)cell.y][(int)cell.z].push_back(copy);
     }
 }
 
@@ -56,19 +76,22 @@ vec3 Grid::getCell(float x, float y, float z) {
     return cell;
 }
 
-void Grid::clearGrid() {
+// clear the particleCopies grid
+void Grid::clearParticleCopies() {
     for (int i = 0; i < xcells; i++) {
         for (int j = 0; j < ycells; j++) {
             for (int k = 0; k < zcells; k++) {
-                grid[i][j][k].clear();
+                particleCopies[i][j][k].clear();
             }
         }
     }
 }
 
-vector<Particle> Grid::getNeighbors(Particle p) {
-    int i=0;
-    vec3 cell = getCell(particles[i].pos[0], particles[i].pos[1], particles[i].pos[2]);
+vec3 getXPos(int i, int j, int k) {
+    
+}
+
+vector<Particle> Grid::getNeighbors(int x, int y, int z, float radius) {
     
 }
 

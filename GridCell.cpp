@@ -10,3 +10,6 @@
 using namespace std;
 using namespace glm;
 
+GridCell::GridCell() {
+    
+};
