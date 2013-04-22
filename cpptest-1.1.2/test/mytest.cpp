@@ -37,11 +37,10 @@
 #endif
 
 #include "../src/cpptest.h"
-//#include "../../particle.h"
+#include "../../particle.h"
 #include "../../grid.h"
-//#include "../../grid.cpp"
-
-//#include "../../Particle.cpp"
+#include "../../grid.cpp"
+#include "../../Particle.cpp"
 
 
 using namespace std;
@@ -59,19 +58,12 @@ public:
         TEST_ADD(GridTestSuite::testSetup)
 		TEST_ADD(GridTestSuite::testSetupVector)
         TEST_ADD(GridTestSuite::testGetCell)
-        //TEST_ADD(GridTestSuite::testClearParticleCopies)
+        TEST_ADD(GridTestSuite::testClearParticleCopies)
 	}
     
 protected:
     virtual void setup() {
-        Grid grid(10.0f,10.0f,10.0f,1.0f);
-//        grid.h = 1.0f;
-//        grid.xdim = 10.0f;
-//        grid.ydim = 10.0f;
-//        grid.zdim = 10.0f;
-//        grid.xcells = 10;
-//        grid.ycells = 10;
-//        grid.zcells = 10;
+        grid = Grid(10.0f,10.0f,10.0f,1.0f);
     }
     
     virtual void tear_down() {}
@@ -82,7 +74,9 @@ private:
         TEST_ASSERT_MSG(grid.xdim == 10.0f, "grid xdim");
         TEST_ASSERT_MSG(grid.ydim == 10.0f, "grid ydim");
         TEST_ASSERT_MSG(grid.zdim == 10.0f, "grid zdim");
-
+        TEST_ASSERT_MSG(grid.xcells == 10, "grid xcells");
+        TEST_ASSERT_MSG(grid.ycells == 10, "grid ycells");
+        TEST_ASSERT_MSG(grid.zcells == 10, "grid zcells");
     }
     
 	void testSetupVector() {

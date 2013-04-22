@@ -105,13 +105,12 @@ mytest.o mytest.o: mytest.cpp /usr/include/c++/4.2.1/cstdlib \
   /usr/include/c++/4.2.1/bits/stl_vector.h \
   /usr/include/c++/4.2.1/bits/stl_bvector.h \
   /usr/include/c++/4.2.1/bits/vector.tcc ../src/cpptest-textoutput.h \
-  ../../grid.h /usr/include/c++/4.2.1/fstream \
+  ../../particle.h /usr/include/c++/4.2.1/fstream \
   /usr/include/c++/4.2.1/bits/basic_file.h \
   /usr/include/c++/4.2.1/bits/fstream.tcc /usr/include/c++/4.2.1/cmath \
   /usr/include/math.h /usr/include/architecture/i386/math.h \
-  /usr/include/c++/4.2.1/bits/cmath.tcc /usr/include/sys/time.h \
-  ../../glm/glm.hpp ../../glm/core/_fixes.hpp \
-  /usr/include/c++/4.2.1/cfloat \
+  /usr/include/c++/4.2.1/bits/cmath.tcc ../../glm/glm.hpp \
+  ../../glm/core/_fixes.hpp /usr/include/c++/4.2.1/cfloat \
   /usr/llvm-gcc-4.2/bin/../lib/gcc/i686-apple-darwin11/4.2.1/include/float.h \
   ../../glm/core/setup.hpp ../../glm/./core/_detail.hpp \
   ../../glm/./core/setup.hpp /usr/include/c++/4.2.1/cassert \
@@ -147,7 +146,8 @@ mytest.o mytest.o: mytest.cpp /usr/include/c++/4.2.1/cstdlib \
   ../../glm/./core/func_vector_relational.inl \
   ../../glm/./core/func_integer.hpp ../../glm/./core/func_integer.inl \
   ../../glm/./core/func_noise.hpp ../../glm/./core/func_noise.inl \
-  ../../glm/./core/_swizzle.hpp ../../particle.h
+  ../../glm/./core/_swizzle.hpp ../../particle.h ../../grid.h \
+  /usr/include/sys/time.h ../../grid.cpp ../../grid.h ../../Particle.cpp
 
 /usr/include/c++/4.2.1/cstdlib:
 
@@ -467,7 +467,7 @@ mytest.o mytest.o: mytest.cpp /usr/include/c++/4.2.1/cstdlib \
 
 ../src/cpptest-textoutput.h:
 
-../../grid.h:
+../../particle.h:
 
 /usr/include/c++/4.2.1/fstream:
 
@@ -482,8 +482,6 @@ mytest.o mytest.o: mytest.cpp /usr/include/c++/4.2.1/cstdlib \
 /usr/include/architecture/i386/math.h:
 
 /usr/include/c++/4.2.1/bits/cmath.tcc:
-
-/usr/include/sys/time.h:
 
 ../../glm/glm.hpp:
 
@@ -622,3 +620,13 @@ mytest.o mytest.o: mytest.cpp /usr/include/c++/4.2.1/cstdlib \
 ../../glm/./core/_swizzle.hpp:
 
 ../../particle.h:
+
+../../grid.h:
+
+/usr/include/sys/time.h:
+
+../../grid.cpp:
+
+../../grid.h:
+
+../../Particle.cpp:
