@@ -8,29 +8,37 @@
 
 #include "particle.h"
 
-
-void setPos(vec3 npos){
-    pos=npos;
+Particle::Particle(vec3 pos, vec3 vel, vec3 color, vec3 force, float mass, float den) {
+    Particle::pos=pos;
+    Particle::vel=vel;
+    Particle::color=color;
+    Particle::force=force;
+    Particle::mass=mass;
+    Particle::den=den;
 }
 
-void setVel(vec3 nvel){
-    vel=nvel;
+void Particle::setPos(vec3 npos){
+    Particle::pos=npos;
 }
 
-void setColor(vec3 ncolor){
-    color=ncolor;
+void Particle::setVel(vec3 nvel){
+    Particle::vel=nvel;
 }
 
-void setForce(vec3 nforce){
-    force=nforce;
+void Particle::setColor(vec3 ncolor){
+    Particle::color=ncolor;
 }
 
-void setMass(float nmass){
-    mass=nmass;
+void Particle::setForce(vec3 nforce){
+    Particle::force=nforce;
 }
 
-void setDen(float nden){
-    den=nden;
+void Particle::setMass(float nmass){
+    Particle::mass=nmass;
+}
+
+void Particle::setDen(float nden){
+    Particle::den=nden;
 }
 
 

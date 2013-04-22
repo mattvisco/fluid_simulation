@@ -15,8 +15,10 @@
 #include <sstream>
 #include <cmath>
 
+#include "fluid_simulator.h"
 #include "particle.h"
 #include "grid.h"
+//#include "fluid_render.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -39,9 +41,10 @@ public:
     vector<Particle>* particles;
     Grid curr_grid;
     Grid new_grid;
-    Simulator ();
+    Simulator () {};
     Simulator (vector<Particle>*, Grid);
     void simulate();
 };
 
-#endif /* defined(____fluid_simulator__) */
+#endif 
+//defined(____fluid_simulator__)

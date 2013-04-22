@@ -7,6 +7,8 @@
 //
 
 #include "grid.h"
+//#include "particle.h"
+//#include "fluid_simulator.h"
 
 Grid::Grid(float xdim, float ydim, float zdim, float h) {
     Grid::xdim = xdim;
@@ -14,9 +16,9 @@ Grid::Grid(float xdim, float ydim, float zdim, float h) {
     Grid::zdim = zdim;
     Grid::h = h;
     
-    xcells = (int)xdim/h;
-    ycells = (int)ydim/h;
-    zcells = (int)zdim/h;
+    Grid::xcells = (int)xdim/h;
+    Grid::ycells = (int)ydim/h;
+    Grid::zcells = (int)zdim/h;
     
     // set up size of grid and initialize the linked lists for each cell
     grid.resize(xcells);
@@ -25,7 +27,7 @@ Grid::Grid(float xdim, float ydim, float zdim, float h) {
         for (int j = 0; j < ycells; j++) {
             grid[i][j].resize(zcells);
             for (int k = 0; k < zcells; k++) {
-                grid[i][j][k] = new vector<Particle>;
+                grid[i][j][k] = *(new vector<Particle>);
             }
         }
     }
@@ -54,7 +56,7 @@ vec3 Grid::getCell(float x, float y, float z) {
     return cell;
 }
 
-void clearGrid() {
+void Grid::clearGrid() {
     for (int i = 0; i < xcells; i++) {
         for (int j = 0; j < ycells; j++) {
             for (int k = 0; k < zcells; k++) {
@@ -64,6 +66,11 @@ void clearGrid() {
     }
 }
 
-vector<Particle> getNeighbors(Particle p) {
+vector<Particle> Grid::getNeighbors(Particle p) {
+    int i=0;
     vec3 cell = getCell(particles[i].pos[0], particles[i].pos[1], particles[i].pos[2]);
+    
 }
+
+
+

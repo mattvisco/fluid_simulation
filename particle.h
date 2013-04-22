@@ -18,20 +18,27 @@
 
 using namespace std;
 using namespace glm;
+
+#include "particle.h"
+//#include "fluid_simulator.h"
+//#include "fluid_render.h"
+//#include "grid.h"
+
 class Particle;
 
 class Particle {
 public:
     vec3 pos, vel, color, force;
-    float mass, den, pres;
-    Particle(vec3 pos, vec3 vel, vec3 color, vec3 force, float mass, float den, float pres) {Particle::pos=pos; Particle::vel=vel; Particle::color=color; Particle::force=force; Particle::mass=mass; Particle::den=den; Particle::pres=pres;}
+    float mass, den;
+    Particle(vec3 pos, vec3 vel, vec3 color, vec3 force, float mass, float den);
+    Particle() {};
     void setPos(vec3);
     void setVel(vec3);
     void setColor(vec3);
     void setForce(vec3);
     void setMass(float);
     void setDen(float);
-    void setPres(float);
 };
 
-#endif /* defined(____particle__) */
+#endif 
+//defined(____particle__)

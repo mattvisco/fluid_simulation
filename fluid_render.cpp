@@ -1,4 +1,4 @@
-//
+    //
 //  fluid.cpp
 //  
 //
@@ -7,15 +7,18 @@
 //
 
 #include "fluid_render.h"
+//#include "particle.h"
+//#include "fluid_simulator.h"
+//#include "grid.h"
 
 inline float sqr(float x) { return x*x; }
 
 using namespace std;
 using namespace glm;
 
-//****************************************************
+//
 // Some Classes
-//****************************************************
+//
 
 class Viewport;
 
@@ -25,29 +28,30 @@ public:
     
 };
 
-//****************************************************
+//
 // Global Variables
-//****************************************************
+//
 Viewport viewport;
 float gridX, gridY, gridZ, cellSize;
 Grid grid;
 vector<Particle> particles;
 Simulator simulator;
 
-//****************************************************
+//
 // Simple init function
-//****************************************************
+//
 void initScene(){
     glClearColor (0.0, 0.0, 0.0, 0.0);
     glClearDepth(1.0);
     
     Grid grid(gridX, gridY, gridZ, cellSize);
     Simulator simulator(&particles, grid);
+    Particle h;
 }
 
-//****************************************************
+//
 // reshape viewport if the window is resized
-//****************************************************
+//
 void myReshape(int w, int h) {
     viewport.w = w;
     viewport.h = h;
@@ -71,9 +75,9 @@ void myReshape(int w, int h) {
 	glMatrixMode(GL_MODELVIEW);
 }
 
-//****************************************************
+//
 // function that does the actual drawing of stuff
-//***************************************************
+//
 void myDisplay(void) {
     
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear Color and Depth Buffers
@@ -94,7 +98,7 @@ void myDisplay(void) {
     glFlush();
     glutSwapBuffers();					// swap buffers (we earlier set double buffer)
 }
-
+ 
 int main(int argc, char *argv[]) {
 
     //This initializes glut
@@ -119,13 +123,13 @@ int main(int argc, char *argv[]) {
     cellSize = 100;
     
     // Cutty scene set up, later make robust function
-    Particle particle1(vec3(1,0,0),vec3(1,0,0),vec3(1,0,0),vec3(1,0,0),3.0,3.0,3.0);
+    Particle particle1(vec3(1,0,0),vec3(1,0,0),vec3(1,0,0),vec3(1,0,0),3.0,3.0);
     particles.push_back(particle1);
-    Particle particle2(vec3(100,100,100),vec3(100,100,100),vec3(100,100,100),vec3(100,100,100),4.0,4.0,4.0);
+    Particle particle2(vec3(100,100,100),vec3(100,100,100),vec3(100,100,100),vec3(100,100,100),4.0,4.0);
     particles.push_back(particle2);
-    Particle particle3(vec3(500,500,0),vec3(500,500,0),vec3(500,500,0),vec3(500,500,0),7.0,7.0,7.0);
+    Particle particle3(vec3(500,500,0),vec3(500,500,0),vec3(500,500,0),vec3(500,500,0),7.0,7.0);
     particles.push_back(particle3);
-    Particle particle4(vec3(0,300,700),vec3(0,300,700),vec3(0,300,700),vec3(0,300,700),10.0,10.0,10.0);
+    Particle particle4(vec3(0,300,700),vec3(0,300,700),vec3(0,300,700),vec3(0,300,700),10.0,10.0);
     particles.push_back(particle4);
     
     
@@ -140,3 +144,4 @@ int main(int argc, char *argv[]) {
     
     return 0;
 }
+

@@ -21,8 +21,11 @@
 
 #include <iostream>
 #include <math.h>
-#include "fluid_simulator.h"
+
+#include "grid.h"
+//#include "fluid_simulator.h"
 #include "particle.h"
+//#include "fluid_render.h"
 
 using namespace std;
 using namespace glm;
@@ -39,7 +42,7 @@ public:
     vector<Particle> particles;
     vector<vector<vector<vector<Particle> > > > grid; // 3d vector of vectors of particles
     Grid (float, float, float, float);
-    Grid (void);
+    Grid (void) {};
     void setParticles(vector<Particle>);
     vector<Particle> getNeighbors(Particle);
 protected: //?? maybe private dgaf
@@ -47,4 +50,5 @@ protected: //?? maybe private dgaf
     void clearGrid();
 };
 
-#endif /* defined(____grid__) */
+#endif 
+//defined(____grid__)
