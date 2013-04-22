@@ -37,10 +37,11 @@
 #endif
 
 #include "../src/cpptest.h"
+//#include "../../particle.h"
 #include "../../grid.h"
-#include "../../grid.cpp"
-#include "../../particle.h"
-#include "../../Particle.cpp"
+//#include "../../grid.cpp"
+
+//#include "../../Particle.cpp"
 
 
 using namespace std;
@@ -55,20 +56,35 @@ public:
     float xdim, ydim, zdim, h;
 	GridTestSuite()
 	{
+        TEST_ADD(GridTestSuite::testSetup)
 		TEST_ADD(GridTestSuite::testSetupVector)
         TEST_ADD(GridTestSuite::testGetCell)
+        //TEST_ADD(GridTestSuite::testClearParticleCopies)
 	}
     
 protected:
-    void setup() {
-        h = 1;
-        xdim = 10;
-        ydim = 10;
-        zdim = 10;
-        Grid grid(xdim, ydim, zdim, h);
+    virtual void setup() {
+        Grid grid(10.0f,10.0f,10.0f,1.0f);
+//        grid.h = 1.0f;
+//        grid.xdim = 10.0f;
+//        grid.ydim = 10.0f;
+//        grid.zdim = 10.0f;
+//        grid.xcells = 10;
+//        grid.ycells = 10;
+//        grid.zcells = 10;
     }
     
+    virtual void tear_down() {}
+    
 private:
+    void testSetup() {
+        TEST_ASSERT_MSG(grid.h == 1.0f, "grid h");
+        TEST_ASSERT_MSG(grid.xdim == 10.0f, "grid xdim");
+        TEST_ASSERT_MSG(grid.ydim == 10.0f, "grid ydim");
+        TEST_ASSERT_MSG(grid.zdim == 10.0f, "grid zdim");
+
+    }
+    
 	void testSetupVector() {
         grid.setupVector(grid.pressures, 10, 10, 10);
         TEST_ASSERT_MSG(grid.pressures.size() == 10, "pressures x10");
@@ -142,19 +158,32 @@ private:
         Particle particle3(vec3(5,5,5),vec3(500,500,0),vec3(500,500,0),vec3(500,500,0),7.0,7.0);
         vec3 cell3(5.0,5.0,5.0);
         Particle particle4(vec3(0.5,3.2,7.7),vec3(0,300,700),vec3(0,300,700),vec3(0,300,700),10.0,10.0);
-        vec3 cell(0.0,3.0,7.0);
+        vec3 cell4(0.0,3.0,7.0);
         
-        vec3 c = grid.getCell(particle1);
-        printf("%f %f %f",c.x,c.y,c.z);
-        
-        TEST_ASSERT_MSG(grid.getCell(particle1).x == 0.0, grid.getCell(particle1).x);
+        vec3 c = grid.getCell(particle1);        
+        TEST_ASSERT_MSG(cellsEqual(c, cell1), "getcell1");
+        c = grid.getCell(particle2);        
+        TEST_ASSERT_MSG(cellsEqual(c, cell2), "getcell2");
+        c = grid.getCell(particle3);        
+        TEST_ASSERT_MSG(cellsEqual(c, cell3), "getcell3");
+        c = grid.getCell(particle4);        
+        TEST_ASSERT_MSG(cellsEqual(c, cell4), "getcell4");
     }
     
     bool cellsEqual(const glm::vec3 &vecA, const glm::vec3 &vecB) {
         const double epsilion = 0.0001;
-        return    fabs(vecA[0] -vecB[0]) < epsilion   
-        && fabs(vecA[1] -vecB[1]) < epsilion   
-        && fabs(vecA[2] -vecB[2]) < epsilion;
+        return    vecA.x == vecB.x && vecA.y == vecB.y && vecA.z == vecB.z;
+    }
+    
+    void testClearParticleCopies() {
+        grid.clearParticleCopies();
+        for (int i = 0; i < grid.xcells; i++) {
+            for (int j = 0; j < grid.ycells; j++) {
+                for (int k = 0; k < grid.zcells; k++) {
+                    TEST_ASSERT_MSG(grid.particleCopies[i][j][k].size()==0, "clear not 0");
+                }
+            }
+        }
     }
     
 //    void testSetupParticleGrid() {

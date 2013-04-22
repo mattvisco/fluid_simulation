@@ -22,15 +22,15 @@
 #include <iostream>
 #include <math.h>
 
-#include "grid.h"
 #include "particle.h"
-#include "GridCell.h"
 
 using namespace std;
 using namespace glm;
 
 class Grid {
 public:
+    Grid (float, float, float, float);
+    Grid (void) {};
     float h; // size of cell
     float xdim; // in real world size
     float ydim;
@@ -47,8 +47,6 @@ public:
     vector<vector<vector<float> > > yvelocityNew;
     vector<vector<vector<float> > > zvelocityNew;
     vector<vector<vector<vector<Particle> > > > particleCopies;
-    Grid (float, float, float, float);
-    Grid (void) {};
     void setParticles(vector<Particle>);
     void setupVector(vector<vector<vector<float> > >&, int, int, int);
     void clearParticleCopies();

@@ -147,8 +147,7 @@ mytest.o mytest.o: mytest.cpp /usr/include/c++/4.2.1/cstdlib \
   ../../glm/./core/func_vector_relational.inl \
   ../../glm/./core/func_integer.hpp ../../glm/./core/func_integer.inl \
   ../../glm/./core/func_noise.hpp ../../glm/./core/func_noise.inl \
-  ../../glm/./core/_swizzle.hpp ../../grid.h ../../particle.h \
-  ../../GridCell.h ../../grid.cpp ../../particle.h ../../Particle.cpp
+  ../../glm/./core/_swizzle.hpp ../../particle.h
 
 /usr/include/c++/4.2.1/cstdlib:
 
@@ -622,14 +621,4 @@ mytest.o mytest.o: mytest.cpp /usr/include/c++/4.2.1/cstdlib \
 
 ../../glm/./core/_swizzle.hpp:
 
-../../grid.h:
-
 ../../particle.h:
-
-../../GridCell.h:
-
-../../grid.cpp:
-
-../../particle.h:
-
-../../Particle.cpp:

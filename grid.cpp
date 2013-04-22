@@ -15,10 +15,10 @@ Grid::Grid(float xdim, float ydim, float zdim, float h) {
     Grid::ydim = ydim;
     Grid::zdim = zdim;
     Grid::h = h;
-    
-    Grid::xcells = (int)xdim/h;
-    Grid::ycells = (int)ydim/h;
-    Grid::zcells = (int)zdim/h;
+        
+    Grid::xcells = (int)(xdim/h);
+    Grid::ycells = (int)(ydim/h);
+    Grid::zcells = (int)(zdim/h);
     
     // set up each 3d vector and initialize the entries of each cell
     setupVector(pressures, xcells, ycells, zcells);
@@ -70,9 +70,9 @@ void Grid::setupParticleGrid() {
 // get the cell of a particle at position (x,y,z) in space
 // if outside grid, puts in grid
 vec3 Grid::getCell(Particle& particle) {
-    float xcell = std::min(std::max(0.0f, (float)floor(particle.pos.x/h)), (float)xdim-1.0f);
-    float ycell = std::min(std::max(0.0f, (float)floor(particle.pos.y/h)), (float)ydim-1.0f);
-    float zcell = std::min(std::max(0.0f, (float)floor(particle.pos.z/h)), (float)zdim-1.0f);
+    float xcell = std::min(std::max(0.0f, (float)floor(particle.pos.x/h)), std::max((float)xcells-1.0f, 0.0f));
+    float ycell = std::min(std::max(0.0f, (float)floor(particle.pos.y/h)), std::max((float)ycells-1.0f, 0.0f));
+    float zcell = std::min(std::max(0.0f, (float)floor(particle.pos.z/h)), std::max((float)zcells-1.0f, 0.0f));
     vec3 cell(xcell, ycell, zcell);
     return cell;
 }
