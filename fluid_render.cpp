@@ -43,7 +43,7 @@ void initScene(){
     glClearDepth(1.0);
     
     grid = Grid(gridX, gridY, gridZ, cellSize);
-    Simulator simulator(particles);
+    Simulator simulator(&particles);
     Particle h;
 }
 

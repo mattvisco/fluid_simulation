@@ -14,8 +14,9 @@ inline float sqr(float x) { return x*x; }
 //using namespace std;
 //using namespace glm;
 
-Simulator::Simulator(vector<Particle>& particles) {
+Simulator::Simulator(vector<Particle>* particles) {
     Simulator::particles = particles;
+    grid.setParticles(particles);
     grid.setupParticleGrid();
     
 }

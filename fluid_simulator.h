@@ -39,10 +39,10 @@ using namespace glm;
 
 class Simulator {
 public:
-    vector<Particle> particles;
+    vector<Particle>* particles;
     Grid grid;
     Simulator (void) {};
-    Simulator (vector<Particle>&);
+    Simulator (vector<Particle>*);
     void simulate();
 };
 

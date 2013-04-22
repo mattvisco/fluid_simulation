@@ -54,15 +54,19 @@ void Grid::setupVector(vector<vector<vector<float> > >& vec, int xsize, int ysiz
     }
 }
 
+void Grid::setParticles(vector<Particle>* particles) {
+    Grid::particles = particles;
+}
+
 // clear particleCopies and copy all new particles into it
 // store a pointer in each particle copy to its original particle (done in Particle constructor)
 void Grid::setupParticleGrid() {
     // clear the grid of old copies of particles
     clearParticleCopies();
     
-    for (int i = 0; i < particles.size(); i++) {
-        vec3 cell = getCell(particles[i]);
-        Particle copy(&particles[i]);
+    for (int i = 0; i < (*particles).size(); i++) {
+        vec3 cell = getCell((*particles)[i]);
+        Particle copy((*particles)[i]);
         particleCopies[(int)cell.x][(int)cell.y][(int)cell.z].push_back(copy);
     }
 }

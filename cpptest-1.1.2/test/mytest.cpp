@@ -52,6 +52,7 @@ class GridTestSuite : public Test::Suite
 public:
     Grid grid;
     vector<Particle> particles;
+    vector<Particle> particles2;
     float xdim, ydim, zdim, h;
 	GridTestSuite()
 	{
@@ -59,14 +60,38 @@ public:
 		TEST_ADD(GridTestSuite::testSetupVector)
         TEST_ADD(GridTestSuite::testGetCell)
         TEST_ADD(GridTestSuite::testClearParticleCopies)
+        TEST_ADD(GridTestSuite::testSetParticles)
+        TEST_ADD(GridTestSuite::testSetupParticleGrid)
+        TEST_ADD(GridTestSuite::testSetupParticleGrid2)
 	}
     
 protected:
     virtual void setup() {
         grid = Grid(10.0f,10.0f,10.0f,1.0f);
+        Particle particle1(vec3(0,0,0),vec3(1,0,0),vec3(1,0,0),vec3(1,0,0),3.0,3.0);
+        Particle particle2(vec3(10,10,10),vec3(100,100,100),vec3(100,100,100),vec3(100,100,100),4.0,4.0);
+        Particle particle3(vec3(5,5,5),vec3(500,500,0),vec3(500,500,0),vec3(500,500,0),7.0,7.0);
+        Particle particle4(vec3(0.5,3.2,7.7),vec3(0,300,700),vec3(0,300,700),vec3(0,300,700),10.0,10.0);
+        particles.push_back(particle1);
+        particles.push_back(particle2);
+        particles.push_back(particle3);
+        particles.push_back(particle4);
+        
+        Particle particle5(vec3(5,5,5),vec3(1,0,0),vec3(1,0,0),vec3(1,0,0),3.0,3.0);
+        Particle particle6(vec3(5.5,5,5),vec3(1,0,0),vec3(1,0,0),vec3(1,0,0),3.0,3.0);
+        Particle particle7(vec3(5.3,5.4,5.6),vec3(1,0,0),vec3(1,0,0),vec3(1,0,0),3.0,3.0);
+        Particle particle8(vec3(5.01,5,5.99),vec3(1,0,0),vec3(1,0,0),vec3(1,0,0),3.0,3.0);
+        particles2.push_back(particle5);
+        particles2.push_back(particle6);
+        particles2.push_back(particle7);
+        particles2.push_back(particle8);
     }
     
-    virtual void tear_down() {}
+    virtual void tear_down() {
+        grid.clearParticleCopies();
+        particles.clear();
+        particles2.clear();
+    }
     
 private:
     void testSetup() {
@@ -180,11 +205,35 @@ private:
         }
     }
     
-//    void testSetupParticleGrid() {
-//        grid.particles = ;
-//        
-//        
-//    }
+    void testSetParticles() {
+        grid.setParticles(&particles);
+        TEST_ASSERT_MSG((*(grid.particles)).size() == 4, "particles size");
+        for (int i = 0; i < (*(grid.particles)).size(); i++) {
+            (*(grid.particles))[i].pos.x += 1;
+            TEST_ASSERT_MSG(particles[i].pos.x == (*(grid.particles))[i].pos.x, "reset pointer x");
+        }
+        
+    }
+    
+    //only tests 1 particle per cell
+    void testSetupParticleGrid() {
+        grid.setParticles(&particles);
+        grid.setupParticleGrid();
+        for (int i = 0; i < particles.size(); i++) {
+            vec3 cell = grid.getCell(particles[i]);
+            TEST_ASSERT_MSG(&(grid.particleCopies[(int)cell.x][(int)cell.y][(int)cell.z][0]) != &(particles[i]), "particleCopies contains copies");
+            TEST_ASSERT_MSG(grid.particleCopies[(int)cell.x][(int)cell.y][(int)cell.z][0].pos.x == particles[i].pos.x, "particleCopies posx");
+            TEST_ASSERT_MSG(grid.particleCopies[(int)cell.x][(int)cell.y][(int)cell.z][0].pos.y == particles[i].pos.y, "particleCopies posy");
+            TEST_ASSERT_MSG(grid.particleCopies[(int)cell.x][(int)cell.y][(int)cell.z][0].pos.z == particles[i].pos.z, "particleCopies posz");
+        }
+    }
+    
+    //test multiple particles per cell
+    void testSetupParticleGrid2() {
+        grid.setParticles(&particles2);
+        grid.setupParticleGrid();
+        TEST_ASSERT_MSG(grid.particleCopies[5][5][5].size() == 4, "4 particles same cell");
+    }
     
 };
 

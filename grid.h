@@ -38,7 +38,7 @@ public:
     int xcells; // number of cells
     int ycells;
     int zcells;
-    vector<Particle> particles;
+    vector<Particle>* particles;
     vector<vector<vector<float> > > pressures; 
     vector<vector<vector<float> > > xvelocityOld; 
     vector<vector<vector<float> > > yvelocityOld; 
@@ -47,7 +47,7 @@ public:
     vector<vector<vector<float> > > yvelocityNew;
     vector<vector<vector<float> > > zvelocityNew;
     vector<vector<vector<vector<Particle> > > > particleCopies;
-    void setParticles(vector<Particle>);
+    void setParticles(vector<Particle>*);
     void setupVector(vector<vector<vector<float> > >&, int, int, int);
     void clearParticleCopies();
     void setupParticleGrid();
