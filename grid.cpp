@@ -66,6 +66,8 @@ void Grid::clearGrid() {
     }
 }
 
+
+
 vector<Particle> Grid::getNeighbors(Particle p) {
     int i=0;
     vec3 cell = getCell(particles[i].pos[0], particles[i].pos[1], particles[i].pos[2]);

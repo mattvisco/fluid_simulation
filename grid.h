@@ -47,6 +47,7 @@ public:
 protected: //?? maybe private dgaf
     vec3 getCell(float, float, float);
     void clearGrid();
+        
 };
 
 #endif 
