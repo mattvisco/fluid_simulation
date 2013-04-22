@@ -23,9 +23,8 @@
 #include <math.h>
 
 #include "grid.h"
-//#include "fluid_simulator.h"
 #include "particle.h"
-//#include "fluid_render.h"
+#include "GridCell.h"
 
 using namespace std;
 using namespace glm;
@@ -40,7 +39,7 @@ public:
     int ycells;
     int zcells;
     vector<Particle> particles;
-    vector<vector<vector<vector<Particle> > > > grid; // 3d vector of vectors of particles
+    vector<vector<vector<vector<GridCell> > > > grid; // 3d vector of grid cells
     Grid (float, float, float, float);
     Grid (void) {};
     void setParticles(vector<Particle>);

@@ -18,7 +18,8 @@
 #include "fluid_simulator.h"
 #include "particle.h"
 #include "grid.h"
-//#include "fluid_render.h"
+#include "GridCell.h"
+
 
 #ifdef _WIN32
 #include <windows.h>

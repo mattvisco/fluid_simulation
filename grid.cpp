@@ -1,14 +1,14 @@
 //
 //  grid.cpp
-//  
+//  staggered MAC grid that stores GridCells containing pressures, velocities, and particle locations
+
 //
 //  Created by Justin Kay on 4/15/13.
 //  
 //
 
 #include "grid.h"
-//#include "particle.h"
-//#include "fluid_simulator.h"
+
 
 Grid::Grid(float xdim, float ydim, float zdim, float h) {
     Grid::xdim = xdim;

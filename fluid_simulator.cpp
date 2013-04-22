@@ -7,8 +7,7 @@
 //
 
 #include "fluid_simulator.h"
-//#include "particle.h"
-//#incldue "grid.h"
+
 
 inline float sqr(float x) { return x*x; }
 
