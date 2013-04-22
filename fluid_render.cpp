@@ -42,8 +42,8 @@ void initScene(){
     glClearColor (0.0, 0.0, 0.0, 0.0);
     glClearDepth(1.0);
     
-    Grid grid(gridX, gridY, gridZ, cellSize);
-    Simulator simulator(&particles, grid);
+    //Grid grid(gridX, gridY, gridZ, cellSize);
+    Simulator simulator(particles);
     Particle h;
 }
 

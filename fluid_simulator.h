@@ -18,7 +18,6 @@
 #include "fluid_simulator.h"
 #include "particle.h"
 #include "grid.h"
-#include "GridCell.h"
 
 
 #ifdef _WIN32
@@ -39,11 +38,10 @@ using namespace glm;
 
 class Simulator {
 public:
-    vector<Particle>* particles;
-    Grid curr_grid;
-    Grid new_grid;
-    Simulator () {};
-    Simulator (vector<Particle>*, Grid);
+    vector<Particle> particles;
+    Grid grid;
+    Simulator (void) {};
+    Simulator (vector<Particle>&);
     void simulate();
 };
 

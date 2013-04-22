@@ -14,19 +14,18 @@ inline float sqr(float x) { return x*x; }
 //using namespace std;
 //using namespace glm;
 
-Simulator::Simulator(vector<Particle>* particles, Grid grid) {
+Simulator::Simulator(vector<Particle>& particles) {
     Simulator::particles = particles;
-    Simulator::curr_grid = grid;
-    Simulator::new_grid = grid;
-    grid.setParticles(*particles);
+    grid.setupParticleGrid();
     
 }
+
 void Simulator::simulate() {
-    for (vector<Particle>::iterator particle = particles->begin(); particle != particles->end(); ++particle) {
-        // may have to call *particle -- not sure yet
-        vector<Particle> neighbors = curr_grid.getNeighbors(*particle);
-        
-    }
+//    for (vector<Particle>::iterator particle = particles->begin(); particle != particles->end(); ++particle) {
+//        // may have to call *particle -- not sure yet
+//        vector<Particle> neighbors = grid.getNeighbors(*particle);
+//        
+//    }
 }
 
 

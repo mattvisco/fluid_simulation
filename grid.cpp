@@ -21,15 +21,15 @@ Grid::Grid(float xdim, float ydim, float zdim, float h) {
     Grid::zcells = (int)zdim/h;
     
     // set up each 3d vector and initialize the entries of each cell
-    setupVector(pressures&, xcells, ycells, zcells);
-    setupVector(xvelocityOld&, xcells+1, ycells, zcells);
-    setupVector(yvelocityOld&, xcells, ycells+1, zcells);
-    setupVector(zvelocityOld&, xcells, ycells, zcells+1);
+    setupVector(pressures, xcells, ycells, zcells);
+    setupVector(xvelocityOld, xcells+1, ycells, zcells);
+    setupVector(yvelocityOld, xcells, ycells+1, zcells);
+    setupVector(zvelocityOld, xcells, ycells, zcells+1);
     
     // set up each 3d vector and initialize the entries of each cell
-    setupVector(xvelocityNew&, xcells+1, ycells, zcells);
-    setupVector(yvelocityNew&, xcells, ycells+1, zcells);
-    setupVector(zvelocityNew&, xcells, ycells, zcells+1);
+    setupVector(xvelocityNew, xcells+1, ycells, zcells);
+    setupVector(yvelocityNew, xcells, ycells+1, zcells);
+    setupVector(zvelocityNew, xcells, ycells, zcells+1);
     
     // set up 3d vector that stores copies of particles
     particleCopies.resize(xcells);
@@ -41,7 +41,7 @@ Grid::Grid(float xdim, float ydim, float zdim, float h) {
     }
 }
 
-void Grid::setupVector(&vector<vector<vector<float>>> vec, int xsize, int ysize, int zsize) {
+void Grid::setupVector(vector<vector<vector<float> > >& vec, int xsize, int ysize, int zsize) {
     vec.resize(xsize);
     for (int i = 0; i < xsize; i++) {
         vec[i].resize(ysize);
@@ -61,17 +61,18 @@ void Grid::setupParticleGrid() {
     clearParticleCopies();
     
     for (int i = 0; i < particles.size(); i++) {
-        vec3 cell = getCell(particles[i].pos.x, particles[i].pos.y, particles[i].pos.z);
-        Particle copy(particles[i]);
+        vec3 cell = getCell(particles[i]);
+        Particle copy(&particles[i]);
         particleCopies[(int)cell.x][(int)cell.y][(int)cell.z].push_back(copy);
     }
 }
 
 // get the cell of a particle at position (x,y,z) in space
-vec3 Grid::getCell(float x, float y, float z) {
-    float xcell = (float)floor(x/h);
-    float ycell = (float)floor(y/h);
-    float zcell = (float)floor(z/h);
+// if outside grid, puts in grid
+vec3 Grid::getCell(Particle& particle) {
+    float xcell = std::min(std::max(0.0f, (float)floor(particle.pos.x/h)), (float)xdim-1.0f);
+    float ycell = std::min(std::max(0.0f, (float)floor(particle.pos.y/h)), (float)ydim-1.0f);
+    float zcell = std::min(std::max(0.0f, (float)floor(particle.pos.z/h)), (float)zdim-1.0f);
     vec3 cell(xcell, ycell, zcell);
     return cell;
 }
@@ -87,13 +88,13 @@ void Grid::clearParticleCopies() {
     }
 }
 
-vec3 getXPos(int i, int j, int k) {
-    
-}
+//vec3 getXPos(int i, int j, int k) {
+//    
+//}
 
-vector<Particle> Grid::getNeighbors(int x, int y, int z, float radius) {
-    
-}
+//vector<Particle> Grid::getNeighbors(int x, int y, int z, float radius) {
+//    
+//}
 
 
 
