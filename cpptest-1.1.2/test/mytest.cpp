@@ -51,8 +51,7 @@ class GridTestSuite : public Test::Suite
 {
 public:
     Grid grid;
-    vector<Particle> particles;
-    vector<Particle> particles2;
+    vector<Particle> particles, particles2, particles3;
     float xdim, ydim, zdim, h;
 	GridTestSuite()
 	{
@@ -63,6 +62,10 @@ public:
         TEST_ADD(GridTestSuite::testSetParticles)
         TEST_ADD(GridTestSuite::testSetupParticleGrid)
         TEST_ADD(GridTestSuite::testSetupParticleGrid2)
+        TEST_ADD(GridTestSuite::testDistance)
+        TEST_ADD(GridTestSuite::testGetNeighbors)
+        TEST_ADD(GridTestSuite::testWeightedAverage)
+        TEST_ADD(GridTestSuite::testStoreOldVelocities)  
 	}
     
 protected:
@@ -77,14 +80,24 @@ protected:
         particles.push_back(particle3);
         particles.push_back(particle4);
         
-        Particle particle5(vec3(5,5,5),vec3(1,0,0),vec3(1,0,0),vec3(1,0,0),3.0,3.0);
-        Particle particle6(vec3(5.5,5,5),vec3(1,0,0),vec3(1,0,0),vec3(1,0,0),3.0,3.0);
-        Particle particle7(vec3(5.3,5.4,5.6),vec3(1,0,0),vec3(1,0,0),vec3(1,0,0),3.0,3.0);
-        Particle particle8(vec3(5.01,5,5.99),vec3(1,0,0),vec3(1,0,0),vec3(1,0,0),3.0,3.0);
+        Particle particle5(vec3(5,5,5),vec3(1,1,1),vec3(1,0,0),vec3(1,0,0),3.0,3.0);
+        Particle particle6(vec3(5.4,5,5),vec3(1,0,0),vec3(1,0,0),vec3(1,0,0),3.0,3.0);
+        Particle particle7(vec3(5.3,5.4,5.1),vec3(1,0,0),vec3(1,0,0),vec3(1,0,0),3.0,3.0);
+        Particle particle8(vec3(5.01,4.5,5.49),vec3(1,0,0),vec3(1,0,0),vec3(1,0,0),3.0,3.0);
         particles2.push_back(particle5);
         particles2.push_back(particle6);
         particles2.push_back(particle7);
         particles2.push_back(particle8);
+        
+        for(int i = 0; i < grid.xcells; i++) {
+            for(int j = 0; j < grid.ycells; j++) {
+                for(int k = 0; k < grid.zcells; k++) {
+                    Particle justinsucksparticle(vec3(i,j,k),vec3(1,1,1),vec3(1,0,0),vec3(1,0,0),3.0,3.0);
+                    particles3.push_back(justinsucksparticle);
+                }
+            }
+        }
+        
     }
     
     virtual void tear_down() {
@@ -101,7 +114,7 @@ private:
         TEST_ASSERT_MSG(grid.zdim == 10.0f, "grid zdim");
         TEST_ASSERT_MSG(grid.xcells == 10, "grid xcells");
         TEST_ASSERT_MSG(grid.ycells == 10, "grid ycells");
-        TEST_ASSERT_MSG(grid.zcells == 10, "grid zcells");
+        TEST_ASSERT_MSG(grid.zcells == 10, "grid grid.zcells");
     }
     
 	void testSetupVector() {
@@ -177,7 +190,7 @@ private:
         Particle particle3(vec3(5,5,5),vec3(500,500,0),vec3(500,500,0),vec3(500,500,0),7.0,7.0);
         vec3 cell3(5.0,5.0,5.0);
         Particle particle4(vec3(0.5,3.2,7.7),vec3(0,300,700),vec3(0,300,700),vec3(0,300,700),10.0,10.0);
-        vec3 cell4(0.0,3.0,7.0);
+        vec3 cell4(1.0,3.0,8.0);
         
         vec3 c = grid.getCell(particle1);        
         TEST_ASSERT_MSG(cellsEqual(c, cell1), "getcell1");
@@ -233,6 +246,64 @@ private:
         grid.setParticles(&particles2);
         grid.setupParticleGrid();
         TEST_ASSERT_MSG(grid.particleCopies[5][5][5].size() == 4, "4 particles same cell");
+    }
+    
+    void testDistance() {
+        vec3 p1(1.0f, 1.0f, 1.0f);
+        vec3 p2(2.0f, 1.0f, 1.0f);
+        float dist = grid.distance(p1,p2);
+        TEST_ASSERT_MSG(dist == 1.0f, "dist fucked");
+    }
+    
+    void testGetNeighbors() {
+        grid.setParticles(&particles2);
+        grid.setupParticleGrid();
+        TEST_ASSERT_MSG(grid.getNeighbors(4.5, 5.0, 5.0, 1.0).size() == 4, "x.5 fucked");
+        TEST_ASSERT_MSG(grid.getNeighbors(5.0, 4.5, 5.0, 1.0).size() == 4, "y.5 fucked");
+        TEST_ASSERT_MSG(grid.getNeighbors(5.0, 5.0, 4.5, 1.0).size() == 3, "z.5 fucked");
+    }
+    
+    // TODO - dont be baased?
+    void testWeightedAverage() {
+        vec3 xpt(4.5, 5.0, 5.0);
+        vec3 ypt(5.0, 4.5, 5.0);
+        vec3 zpt(5.0, 5.0, 4.5);
+        float xresult = grid.weightedAverage(particles2, xpt, X_AXIS);
+        float yresult = grid.weightedAverage(particles2, ypt, Y_AXIS);
+        float zresult = grid.weightedAverage(particles2, zpt, Z_AXIS);
+        vector<Particle> nurb;
+        float nurbresult = grid.weightedAverage(nurb, xpt, X_AXIS);
+    }
+    
+    void testStoreOldVelocities() {
+        grid.setParticles(&particles3);
+        grid.setupParticleGrid();
+        grid.storeOldVelocities();
+        
+        // x
+        for (int i=0; i < grid.xcells+1; i++) {
+            for (int j=0; j < grid.ycells; j++) {
+                for (int k=0; k < grid.zcells; k++) {
+                    TEST_ASSERT_MSG(grid.xvelocityOld[i][j][k] == 1, "x is 1");
+                }
+            }
+        }
+        // y
+        for (int i=0; i < grid.xcells; i++) {
+            for (int j=0; j < grid.ycells+1; j++) {
+                for (int k=0; k < grid.zcells; k++) {
+                    TEST_ASSERT_MSG(grid.yvelocityOld[i][j][k] == 1, "y is 1");
+                }
+            }
+        }
+        // z
+        for (int i=0; i < grid.xcells; i++) {
+            for (int j=0; j < grid.ycells; j++) {
+                for (int k=0; k < grid.zcells+1; k++) {
+                    TEST_ASSERT_MSG(grid.zvelocityOld[i][j][k] == 1, "z is 1");
+                }
+            }
+        }
     }
     
 };
