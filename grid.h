@@ -30,7 +30,7 @@
 #define GRAVITY -9.81f // meters/second^2
 #define DENSITY 1.0f
 #define KCFL 1 // constant for CFL condition for timestep
-#define DAMPENING 0.4f
+#define DAMPENING 0.7f
 
 using namespace std;
 using namespace glm;

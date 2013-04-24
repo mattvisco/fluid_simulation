@@ -41,24 +41,30 @@ void Simulator::moveParticles() {
         // reverse and dampen normal velocity
         if ((*particles)[i].pos.x > grid.xdim) {
             (*particles)[i].pos.x = grid.xdim;
-            (*particles)[i].vel.x *= -DAMPENING;
+            (*particles)[i].vel.x *= -1;
+            (*particles)[i].vel *= DAMPENING;
         } else if ((*particles)[i].pos.x < 0) {
             (*particles)[i].pos.x = 0;
-            (*particles)[i].vel.x *= -DAMPENING;
+            (*particles)[i].vel.x *= -1;
+            (*particles)[i].vel *= DAMPENING;
         }
         if ((*particles)[i].pos.y > grid.ydim) {
             (*particles)[i].pos.y = grid.ydim;
-            (*particles)[i].vel.y *= -DAMPENING;
+            (*particles)[i].vel.y *= -1;
+            (*particles)[i].vel *= DAMPENING;
         } else if ((*particles)[i].pos.y < 0) {
             (*particles)[i].pos.y = 0;
-            (*particles)[i].vel.y *= -DAMPENING;
+            (*particles)[i].vel.y *= -1;
+            (*particles)[i].vel *= DAMPENING;
         }
         if ((*particles)[i].pos.z > grid.zdim) {
             (*particles)[i].pos.z = grid.zdim;
-            (*particles)[i].vel.z *= -DAMPENING;
+            (*particles)[i].vel.z *= -1;
+            (*particles)[i].vel *= DAMPENING;
         } else if ((*particles)[i].pos.z < 0) {
             (*particles)[i].pos.z = 0;
-            (*particles)[i].vel.z *= -DAMPENING;
+            (*particles)[i].vel.z *= -1;
+            (*particles)[i].vel *= DAMPENING;
         }
     }
 }
