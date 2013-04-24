@@ -147,7 +147,9 @@ mytest.o mytest.o: mytest.cpp /usr/include/c++/4.2.1/cstdlib \
   ../../glm/./core/func_integer.hpp ../../glm/./core/func_integer.inl \
   ../../glm/./core/func_noise.hpp ../../glm/./core/func_noise.inl \
   ../../glm/./core/_swizzle.hpp ../../particle.h ../../grid.h \
-  /usr/include/sys/time.h ../../grid.cpp ../../grid.h ../../Particle.cpp
+  /usr/include/sys/time.h ../../grid.cpp ../../grid.h ../../Particle.cpp \
+  ../../fluid_simulator.h ../../fluid_simulator.h \
+  ../../fluid_simulator.cpp
 
 /usr/include/c++/4.2.1/cstdlib:
 
@@ -630,3 +632,9 @@ mytest.o mytest.o: mytest.cpp /usr/include/c++/4.2.1/cstdlib \
 ../../grid.h:
 
 ../../Particle.cpp:
+
+../../fluid_simulator.h:
+
+../../fluid_simulator.h:
+
+../../fluid_simulator.cpp:

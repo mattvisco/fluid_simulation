@@ -41,6 +41,8 @@
 #include "../../grid.h"
 #include "../../grid.cpp"
 #include "../../Particle.cpp"
+#include "../../fluid_simulator.h"
+#include "../../fluid_simulator.cpp"
 
 
 using namespace std;
@@ -55,6 +57,7 @@ public:
     float xdim, ydim, zdim, h;
 	GridTestSuite()
 	{
+        TEST_ADD(GridTestSuite::testSimulate)
         TEST_ADD(GridTestSuite::testSetup)
 		TEST_ADD(GridTestSuite::testSetupVector)
         TEST_ADD(GridTestSuite::testGetCell)
@@ -66,11 +69,17 @@ public:
         TEST_ADD(GridTestSuite::testGetNeighbors)
         TEST_ADD(GridTestSuite::testWeightedAverage)
         TEST_ADD(GridTestSuite::testStoreOldVelocities)  
+        TEST_ADD(GridTestSuite::testInterpolation) 
+         
 	}
     
 protected:
     virtual void setup() {
-        grid = Grid(10.0f,10.0f,10.0f,1.0f);
+        xdim = 10.0f;
+        ydim = 10.0f;
+        zdim = 10.0f;
+        h = 1.0f;
+        grid = Grid(xdim,ydim,zdim,h);
         Particle particle1(vec3(0,0,0),vec3(1,0,0),vec3(1,0,0),vec3(1,0,0),3.0,3.0);
         Particle particle2(vec3(10,10,10),vec3(100,100,100),vec3(100,100,100),vec3(100,100,100),4.0,4.0);
         Particle particle3(vec3(5,5,5),vec3(500,500,0),vec3(500,500,0),vec3(500,500,0),7.0,7.0);
@@ -304,6 +313,26 @@ private:
                 }
             }
         }
+    }
+    
+    void testInterpolation() {
+        grid.xvelocityNew[0][0][0] = 1;
+        grid.xvelocityNew[1][0][0] = 1;
+        grid.xvelocityNew[0][1][0] = 1;
+        grid.xvelocityNew[0][0][1] = 1;
+        grid.xvelocityNew[1][1][0] = 1;
+        grid.xvelocityNew[1][0][1] = 1;
+        grid.xvelocityNew[0][1][1] = 1;
+        grid.xvelocityNew[1][1][1] = 1;
+        grid.getInterpolatedVelocityDifference(vec3(1,0,0));
+    }
+    
+    void testSimulate() {
+        Simulator simulator(&particles, xdim, ydim, zdim, h);
+        for (int i=0; i <5000; i++) {
+            simulator.simulate();
+        }
+        TEST_ASSERT_MSG(1==0, "yo");
     }
     
 };

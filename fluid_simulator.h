@@ -2,7 +2,7 @@
 //  fluid_simulator.h
 //  
 //
-//  Created by Matthew Visco on 4/15/13.
+//  Created by Matthew Visco and JustinJUSTINJUSTIN  on 4/15/13.
 //
 //
 
@@ -42,8 +42,9 @@ public:
     vector<Particle>* particles;
     Grid grid;
     Simulator (void) {};
-    Simulator (vector<Particle>*);
+    Simulator (vector<Particle>*,float,float,float,float);
     void simulate();
+    void moveParticles();
 };
 
 #endif 
