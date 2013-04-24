@@ -10,6 +10,7 @@
 #include "grid.h"
 
 
+
 Grid::Grid(float xdim, float ydim, float zdim, float h) {
     Grid::xdim = xdim;
     Grid::ydim = ydim;
@@ -22,15 +23,15 @@ Grid::Grid(float xdim, float ydim, float zdim, float h) {
     Grid::zcells = (int)zdim/h;
     
     // set up each 3d vector and initialize the entries of each cell
-    setupVector(pressures&, xcells, ycells, zcells);
-    setupVector(xvelocityOld&, xcells+1, ycells, zcells);
-    setupVector(yvelocityOld&, xcells, ycells+1, zcells);
-    setupVector(zvelocityOld&, xcells, ycells, zcells+1);
+    setupVector(pressures, xcells, ycells, zcells);
+    setupVector(xvelocityOld, xcells+1, ycells, zcells);
+    setupVector(yvelocityOld, xcells, ycells+1, zcells);
+    setupVector(zvelocityOld, xcells, ycells, zcells+1);
     
     // set up each 3d vector and initialize the entries of each cell
-    setupVector(xvelocityNew&, xcells+1, ycells, zcells);
-    setupVector(yvelocityNew&, xcells, ycells+1, zcells);
-    setupVector(zvelocityNew&, xcells, ycells, zcells+1);
+    setupVector(xvelocityNew, xcells+1, ycells, zcells);
+    setupVector(yvelocityNew, xcells, ycells+1, zcells);
+    setupVector(zvelocityNew, xcells, ycells, zcells+1);
     
     // set up 3d vector that stores copies of particles
     particleCopies.resize(xcells);
@@ -42,7 +43,7 @@ Grid::Grid(float xdim, float ydim, float zdim, float h) {
     }
 }
 
-void Grid::setupVector(&vector<vector<vector<float>>> vec, int xsize, int ysize, int zsize) {
+void Grid::setupVector(vector<vector<vector<float> > >& vec, int xsize, int ysize, int zsize) {
     vec.resize(xsize);
     for (int i = 0; i < xsize; i++) {
         vec[i].resize(ysize);
@@ -62,17 +63,18 @@ void Grid::setupParticleGrid() {
     clearParticleCopies();
     
     for (int i = 0; i < particles.size(); i++) {
-        vec3 cell = getCell(particles[i].pos.x, particles[i].pos.y, particles[i].pos.z);
-        Particle copy(particles[i]);
+        vec3 cell = getCell(particles[i]);
+        Particle copy(&particles[i]);
         particleCopies[(int)cell.x][(int)cell.y][(int)cell.z].push_back(copy);
     }
 }
 
 // get the cell of a particle at position (x,y,z) in space
-vec3 Grid::getCell(float x, float y, float z) {
-    float xcell = (float)floor(x/h);
-    float ycell = (float)floor(y/h);
-    float zcell = (float)floor(z/h);
+// if outside grid, puts in grid
+vec3 Grid::getCell(Particle& particle) {
+    float xcell = std::min(std::max(0.0f, (float)floor(particle.pos.x/h)), (float)xdim-1.0f);
+    float ycell = std::min(std::max(0.0f, (float)floor(particle.pos.y/h)), (float)ydim-1.0f);
+    float zcell = std::min(std::max(0.0f, (float)floor(particle.pos.z/h)), (float)zdim-1.0f);
     vec3 cell(xcell, ycell, zcell);
     return cell;
 }
@@ -88,125 +90,212 @@ void Grid::clearParticleCopies() {
     }
 }
 
-
-void computePressure(){
+void Grid::computePressure(){
     float deltaT=1.0;
     float density=1.0;
     int size=xcells*ycells*zcells;
-    Vector_double x(size,0.0);
-    Vector_double b(size,0,0);
+    double x[size];
+    double b[size];
     vector<float> val;
     vector<int> ival;
-    vector<int> jval;
+    vector<int> rval;
+    rval.push_back(0);
+    rval.push_back(2);
+    ival.push_back(0);
+    ival.push_back(1);
+    val.push_back(1);
+    val.push_back(1);
     for (int i=0;i<xcells;i++){
         for (int j=0; j<ycells; j++){
             for (int k=0; k<zcells; k++){
                 int n=0;
                 if (i==0){
                     if (particleCopies[i+1][j][k].size()!=0){
-                        val.push_back(-1/(h*h));
-                        jval.push_back(k+zcells*j+zcells*ycells*(i+1));
-                        ival.push_back(k+zcells*j+zcells*ycells*i);
+                        printf("#1\n");
+                        //val.push_back((1/density)*(deltaT)*(-1)/(h*h));
+                        val.push_back(1);
+                        ival.push_back(k+zcells*j+zcells*ycells*(i+1));
                         n++;
                     }
                 } else if (i==xcells-1){
                     if (particleCopies[i-1][j][k].size()!=0){
-                        val.push_back(-1/(h*h));
-                        jval.push_back(k+zcells*j+zcells*ycells*(i-1));
-                        ival.push_back(k+zcells*j+zcells*ycells*i);
+                        printf("#2\n");
+                        //val.push_back((1/density)*(deltaT)*(-1)/(h*h));
+                        val.push_back(1);
+                        ival.push_back(k+zcells*j+zcells*ycells*(i-1));
                         n++;
                     }
                 } else {
                     if (particleCopies[i-1][j][k].size()!=0){
-                        val.push_back(-1/(h*h));
-                        jval.push_back(k+zcells*j+zcells*ycells*(i-1));
-                        ival.push_back(k+zcells*j+zcells*ycells*i);
+                        printf("#3\n");
+                        //val.push_back((1/density)*(deltaT)*(-1)/(h*h));
+                        val.push_back(1);
+                        ival.push_back(k+zcells*j+zcells*ycells*(i-1));
                         n++;
                     }
                     if (particleCopies[i+1][j][k].size()!=0){
-                        val.push_back(-1/(h*h));
-                        jval.push_back(k+zcells*j+zcells*ycells*(i+1));
-                        ival.push_back(k+zcells*j+zcells*ycells*i);
+                        printf("#4\n");
+                        //val.push_back((1/density)*(deltaT)*(-1)/(h*h));
+                        val.push_back(1);
+                        ival.push_back(k+zcells*j+zcells*ycells*(i+1));
                         n++;
                     }
                 }
                 if (j==0){
                     if (particleCopies[i][j+1][k].size()!=0){
-                        val.push_back(-1/(h*h));
-                        jval.push_back(k+zcells*(j+1)+zcells*ycells*i);
-                        ival.push_back(k+zcells*j+zcells*ycells*i);
+                        printf("#5\n");
+                        //val.push_back((1/density)*(deltaT)*(-1)/(h*h));
+                        val.push_back(1);
+                        ival.push_back(k+zcells*(j+1)+zcells*ycells*i);
                         n++;
                     }
                 } else if (j==ycells-1){
                     if (particleCopies[i][j-1][k].size()!=0){
-                        val.push_back(-1/(h*h));
-                        jval.push_back(k+zcells*(j-1)+zcells*ycells*i);
-                        ival.push_back(k+zcells*j+zcells*ycells*i);
+                        printf("#6\n");
+                        //val.push_back((1/density)*(deltaT)*(-1)/(h*h));
+                        val.push_back(1);
+                        ival.push_back(k+zcells*(j-1)+zcells*ycells*i);
                         n++;
                     }
                 } else {
                     if (particleCopies[i][j-1][k].size()!=0){
-                        val.push_back(-1/(h*h));
-                        jval.push_back(k+zcells*(j-1)+zcells*ycells*i);
-                        ival.push_back(k+zcells*j+zcells*ycells*i);
+                        printf("#7\n");
+                        //val.push_back((1/density)*(deltaT)*(-1)/(h*h));
+                        val.push_back(1);
+                        ival.push_back(k+zcells*(j-1)+zcells*ycells*i);
                         n++;
                     }
                     if (particleCopies[i][j+1][k].size()!=0){
-                        val.push_back(-1/(h*h));
-                        jval.push_back(k+zcells*(j+1)+zcells*ycells*i);
-                        ival.push_back(k+zcells*j+zcells*ycells*i);
+                        printf("#8\n");
+                        //val.push_back((1/density)*(deltaT)*(-1)/(h*h));
+                        val.push_back(1);
+                        ival.push_back(k+zcells*(j+1)+zcells*ycells*i);
                         n++;
                     }
                 }
                 if (k==0){
                     if (particleCopies[i][j][k+1].size()!=0){
-                        val.push_back(-1/(h*h));
-                        jval.push_back(k+1+zcells*j+zcells*ycells*i);
-                        ival.push_back(k+zcells*j+zcells*ycells*i);
+                        printf("#9\n");
+                        //val.push_back((1/density)*(deltaT)*(-1)/(h*h));
+                        val.push_back(1);
+                        ival.push_back(k+1+zcells*j+zcells*ycells*i);
                         n++;
                     }
                 } else if (k==zcells-1){
                     if (particleCopies[i][j][k-1].size()!=0){
-                        val.push_back(-1/(h*h));
-                        jval.push_back(k-1+zcells*j+zcells*ycells*i);
-                        ival.push_back(k+zcells*j+zcells*ycells*i);
+                        printf("#10\n");
+                        //val.push_back((1/density)*(deltaT)*(-1)/(h*h));
+                        val.push_back(1);
+                        ival.push_back(k-1+zcells*j+zcells*ycells*i);
                         n++;
                     }
                 } else {
                     if (particleCopies[i][j][k-1].size()!=0){
-                        val.push_back(-1/(h*h));
-                        jval.push_back(k-1+zcells*j+zcells*ycells*i);
-                        ival.push_back(k+zcells*j+zcells*ycells*i);
+                        printf("#11\n");
+                        //val.push_back((1/density)*(deltaT)*(-1)/(h*h));
+                        val.push_back(1);
+                        ival.push_back(k-1+zcells*j+zcells*ycells*i);
                         n++;
                     }
                     if (particleCopies[i][j][k+1].size()!=0){
-                        val.push_back(-1/(h*h));
-                        jval.push_back(k+1+zcells*j+zcells*ycells*i);
-                        ival.push_back(k+zcells*j+zcells*ycells*i);
+                        printf("#12\n");
+                        //val.push_back((1/density)*(deltaT)*(-1)/(h*h));
+                        val.push_back(1);
+                        ival.push_back(k+1+zcells*j+zcells*ycells*i);
                         n++;
                     }
                 }
                 if (particleCopies[i][j][k].size()!=0){
-                    val.push_back(n/(h*h));
+                    //val.push_back(n/(h*h));
+                    val.push_back(1);
                     ival.push_back(k+zcells*j+zcells*ycells*i);
-                    jval.push_back(k+zcells*j+zcells*ycells*i);
+                    rval.push_back(n+1);
+                } else {
+                    rval.push_back(n);
                 }
-                b[k+zcells*j+zcells*ycells*i]=(-1)*(xvelocityOld[i+1][j][k]-xvelocityOld[i][j][k]+yvelocityOld[i][j+1][k]-yvelocityOld[i][j][k]+zvelocityOld[i][j][k+1]-zvelocityOld[i][j][k])/h;
+                //b[k+zcells*j+zcells*ycells*i]=(-1)*(xvelocityOld[i+1][j][k]-xvelocityOld[i][j][k]+yvelocityOld[i][j+1][k]-yvelocityOld[i][j][k]+zvelocityOld[i][j][k+1]-zvelocityOld[i][j][k])/h;
+                if (k+zcells*j+zcells*ycells*i==0 || k+zcells*j+zcells*ycells*i==1){
+                    b[k+zcells*j+zcells*ycells*i]=1;
+                } else {
+                    b[k+zcells*j+zcells*ycells*i]=0;
+                }
             }
         }
     }
-    Coord_Mat_double A(size, size, val.size(), val, ival, jval);
-    ICPreconditioner D(A);
-    int result = CG(A,x,b,D,150,1e-6);
+    
+    int it=150;
+    int tol=1.e-6;
+    int c=val.size();
+    double value[c];
+    int ivalue[c];
+    int pvalue[rval.size()];
+    for (int g=0;g<c;g++){
+        value[g]=val[g];
+        ivalue[g]=ival[g];
+    }
+    for (int h=0;h<rval.size();h++){
+        pvalue[h]=rval[h];
+    }
+    
+    int status;
+    //int n=5;
+    //int Ap[]={0,2,5,9, 10, 12} ;
+    //int Ai[]={0, 1, 0, 2, 4, 1, 2, 3, 4, 2, 1, 4}; double Ax [ ] = {2., 3., 3., -1., 4., 4., -3., 1., 2., 2., 6., 1.} ; double b [ ] = {8., 45., -3., 3., 19.} ;
+    //double x [5] ;
+    double *null = (double *) NULL ;
+    int i ;
+    int *Nr, *Ni, *P, *Q;
+    double *Nv;
+    void *Symbolic, *Numeric ;
+    (void) umfpack_di_symbolic (size, size, pvalue, ivalue, value, &Symbolic, null, null) ;
+    printf("Checkpoint1\n");
+    (void) umfpack_di_numeric (pvalue, ivalue, value, Symbolic, &Numeric, null, null) ;
+    printf("Checkpoint2\n");
+    umfpack_di_free_symbolic (&Symbolic) ;
+    printf("Checkpoint3\n");
+    status = umfpack_di_solve (UMFPACK_At, pvalue, ivalue, value, x, b, Numeric, null, null) ;
+    if (status==UMFPACK_OK){
+        printf("yes\n");
+    } else {
+        printf("%i\n",status);
+    }
+    printf("Checkpoint4\n");
+    //umfpack_di_free_numeric (&Numeric) ;
+    for (i = 0 ; i < size ; i++) printf ("x [%d] = %g\n", i, x [i]) ;
+    /*
+    int value={
+    double *null = (double *) NULL;
+    int i;
+    void *Symbolic, *Numeric;
+    int *Nr, *Ni, *P, *Q;
+    double *Nv;
+    int status;
+     */
+    //int status = umfpack_di_transpose(size,size,rvalue,ivalue,value,P,Q,Nr,Ni,Nv);
+    //if (status==UMFPACK_OK){
+    //    printf("YES");
+    //} else {
+    //    printf("NO\n %i", status);
+    //    exit(0);
+    //}
+    //status = umfpack_di_symbolic(size, size, Nr, Ni, Nv, &Symbolic, null, null);
+    //status = umfpack_di_numeric(rvalue, ivalue, value, Symbolic, &Numeric, null, null);
+    //umfpack_di_free_symbolic (&Symbolic);
+    //(void) umfpack_di_solve(UMFPACK_A, rvalue, ivalue, value, x, b, Numeric, null, null);
+    //umfpack_di_free_numeric(&Numeric);
+    /*
     for (int ii=0;ii<xcells;ii++){
         for (int jj=0;jj<ycells;jj++){
-            for (int kk=0;kk<zells;kk++){
-                pressures[ii][jj][kk]=(1/density)*(deltaT)*x[kk+zcells*jj+zcells*ycells*ii];
+            for (int kk=0;kk<zcells;kk++){
+                pressures[ii][jj][kk]=x[kk+zcells*jj+zcells*ycells*ii];
             }
         }
     }
+     */
+     
+     
 }
-
+/*
 vector<Particle> Grid::getNeighbors(Particle p) {
     int i=0;
     vec3 cell = getCell(particles[i].pos[0], particles[i].pos[1], particles[i].pos[2]);
@@ -214,6 +303,7 @@ vec3 getXPos(int i, int j, int k) {
     
 }
     
+*/
 
 
 

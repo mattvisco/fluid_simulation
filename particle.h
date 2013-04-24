@@ -32,6 +32,7 @@ public:
     float mass, den;
     Particle* copy;
     Particle(vec3 pos, vec3 vel, vec3 color, vec3 force, float mass, float den);
+    Particle(Particle* particle);
     Particle(void) {};
 };
 

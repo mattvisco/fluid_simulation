@@ -5,22 +5,22 @@
 
 #ifndef ____grid__
 #define ____grid__
+//#define COMPLEX std::complex<double>
 
 #include <vector>
+#include <stdlib.h>
 #include <fstream>
 #include <sstream>
 #include <cmath>
+#include <stdio.h>
 
 #include <sys/time.h>
-#include "SparseLib++/1.7/include/iohb.h"
 #include "glm/glm.hpp"
-//#include "gmare.h"
-//#include "ilupres.h"
-//#include "compcol1.h"
-//#include "iohb.h"
-//#include "vector.h"
-//#include "blas1.h"
 #include <time.h>
+
+#include "UMFPACK/Include/umfpack.h"
+#include <Accelerate/Accelerate.h>
+
 
 #define PI 3.14159265
 #define epsilon .0001
@@ -31,7 +31,7 @@
 
 #include "grid.h"
 #include "particle.h"
-#include "GridCell.h"
+
 
 using namespace std;
 using namespace glm;
@@ -55,13 +55,15 @@ public:
     vector<vector<vector<float> > > yvelocityNew;
     vector<vector<vector<float> > > zvelocityNew;
     vector<vector<vector<vector<Particle> > > > particleCopies;
-    void computePressue();
+    void computePressure();
     Grid (float, float, float, float);
     Grid (void) {};
     void setParticles(vector<Particle>);
+    void setupVector(vector<vector<vector<float> > >&, int, int, int);
+    void clearParticleCopies();
+    void setupParticleGrid();
     vector<Particle> getNeighbors(Particle);
-protected: //?? maybe private dgaf
-    vec3 getCell(float, float, float);
+    vec3 getCell(Particle&);
     void clearGrid();
         
 };

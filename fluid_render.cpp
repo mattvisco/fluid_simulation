@@ -43,8 +43,22 @@ void initScene(){
     glClearDepth(1.0);
     
     Grid grid(gridX, gridY, gridZ, cellSize);
-    Simulator simulator(&particles, grid);
-    Particle h;
+    for (int i=0;i<grid.xcells;i++){
+        for (int j=0; j<grid.ycells;j++){
+            for (int h=0; h<grid.zcells; h++){
+                grid.pressures[i][j][h]=10.0;
+                grid.xvelocityOld[i][j][h]=2.0;
+                grid.yvelocityOld[i][j][h]=2.0;
+                grid.zvelocityOld[i][j][h]=2.0;
+            }
+        }
+    }
+    grid.xvelocityOld[grid.xcells][grid.ycells-1][grid.zcells-1]=3.0;
+    grid.yvelocityOld[grid.xcells-1][grid.ycells][grid.zcells-1]=3.0;
+    grid.zvelocityOld[grid.xcells-1][grid.ycells-1][grid.zcells]=3.0;
+    grid.computePressure();
+    //Simulator simulator(particles);
+    //Particle h;
 }
 
 //
@@ -119,7 +133,6 @@ int main(int argc, char *argv[]) {
     // later parsed from command line
     gridX = 1000, gridY = 1000, gridZ = 1000;
     cellSize = 100;
-    
     // Cutty scene set up, later make robust function
     Particle particle1(vec3(1,0,0),vec3(1,0,0),vec3(1,0,0),vec3(1,0,0),3.0,3.0);
     particles.push_back(particle1);
@@ -134,11 +147,11 @@ int main(int argc, char *argv[]) {
     initScene();							// quick function to set up scene
     
     
-    glutDisplayFunc(myDisplay);				// function to run when its time to draw something
-    glutReshapeFunc(myReshape);				// function to run when the window gets resized
-    glutIdleFunc(myDisplay);
+    //glutDisplayFunc(myDisplay);				// function to run when its time to draw something
+    //glutReshapeFunc(myReshape);				// function to run when the window gets resized
+    //glutIdleFunc(myDisplay);
     
-    glutMainLoop();	// infinite loop that will keep drawing and resizing
+    //glutMainLoop();	// infinite loop that will keep drawing and resizing
     
     return 0;
 }

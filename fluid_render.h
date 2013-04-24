@@ -19,7 +19,8 @@
 #include "particle.h"
 #include "fluid_simulator.h"
 #include "grid.h"
-#include "GridCell.h"
+
+
 
 #ifdef _WIN32
 #include <windows.h>
