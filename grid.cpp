@@ -110,7 +110,9 @@ void Grid::computePressure(){
     double x[size];
     double b[size];
     vector<float> val;
+    vector<float> tempval;
     vector<int> ival;
+    vector<int> tempival;
     vector<int> rval;
     int colCounter=0;
     rval.push_back(colCounter);
@@ -118,6 +120,7 @@ void Grid::computePressure(){
         for (int j=0; j<ycells; j++){
             for (int k=0; k<zcells; k++){
                 int n=0;
+                bool fx, fy, fz;
                 if (i>0){
                     if (particleCopies[i-1][j][k].size()!=0){
                         //printf("#1\n");
@@ -144,35 +147,41 @@ void Grid::computePressure(){
                     }
                     
                 }
-                if (particleCopies[i][j][k].size()!=0){
-                    val.push_back((1/DENSITY)*(timeStep)*n/(h*h));
-                    ival.push_back(k+zcells*j+zcells*ycells*i);
-                    n++;
-                }
                 if (k<zcells-1){
                     if (particleCopies[i][j][k+1].size()!=0){
                         //printf("#9\n");
-                        val.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
-                        ival.push_back(k+1+zcells*j+zcells*ycells*i);
+                        tempval.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
+                        tempival.push_back(k+1+zcells*j+zcells*ycells*i);
                         n++;
                     }
                 }
                 if (j<ycells-1){
                     if (particleCopies[i][j+1][k].size()!=0){
                         //printf("#8\n");
-                        val.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
-                        ival.push_back(k+zcells*(j+1)+zcells*ycells*i);
+                        tempval.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
+                        tempival.push_back(k+zcells*(j+1)+zcells*ycells*i);
                         n++;
                     }
                     
                 } if (i<xcells-1){
                     if (particleCopies[i+1][j][k].size()!=0){
                         //printf("#4\n");
-                        val.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
-                        ival.push_back(k+zcells*j+zcells*ycells*(i+1));
+                        tempval.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
+                        tempival.push_back(k+zcells*j+zcells*ycells*(i+1));
                         n++;
                     }
                 }
+                if (particleCopies[i][j][k].size()!=0){
+                    val.push_back((1/DENSITY)*(timeStep)*n/(h*h));
+                    ival.push_back(k+zcells*j+zcells*ycells*i);
+                    n++;
+                }
+                for (int r =0;r<tempval.size();r++){
+                    val.push_back(tempval[r]);
+                    ival.push_back(tempival[r]);
+                }
+                tempval.clear();
+                tempival.clear();
                 colCounter+=n;
                 rval.push_back(colCounter);
                 if (colCounter!=0){
