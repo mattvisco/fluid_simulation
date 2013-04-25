@@ -2,7 +2,7 @@
 //  fluid_simulator.h
 //  
 //
-//  Created by Matthew Visco on 4/15/13.
+//  Created by Matthew Visco and JustinSUCKSTITYBALLS on 4/15/13.
 //
 //
 
@@ -15,8 +15,11 @@
 #include <sstream>
 #include <cmath>
 
+#include "fluid_simulator.h"
 #include "particle.h"
 #include "grid.h"
+
+
 
 #ifdef _WIN32
 #include <windows.h>
@@ -37,11 +40,12 @@ using namespace glm;
 class Simulator {
 public:
     vector<Particle>* particles;
-    Grid curr_grid;
-    Grid new_grid;
-    Simulator ();
-    Simulator (vector<Particle>*, Grid);
+    Grid grid;
+    Simulator (void) {};
+    Simulator (vector<Particle>*,float,float,float,float);
     void simulate();
+    void moveParticles();
 };
 
-#endif /* defined(____fluid_simulator__) */
+#endif 
+//defined(____fluid_simulator__)

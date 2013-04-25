@@ -6,8 +6,8 @@
 //
 //
 
-#ifndef ____fluid__
-#define ____fluid__
+#ifndef ____fluid_render__
+#define ____fluid_render__
 
 #include <iostream>
 #include <vector>
@@ -15,6 +15,7 @@
 #include <sstream>
 #include <cmath>
 
+#include "fluid_render.h"
 #include "particle.h"
 #include "fluid_simulator.h"
 #include "grid.h"
@@ -41,4 +42,5 @@
 #define epsilon .0001
 
 
-#endif /* defined(____fluid__) */
+#endif 
+//defined(____fluid__)
