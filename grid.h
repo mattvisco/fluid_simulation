@@ -37,9 +37,14 @@
 #define Y_AXIS 1
 #define Z_AXIS 2
 #define GRAVITY -9.81f // meters/second^2
-#define DENSITY 1.0f
-#define KCFL 1 // constant for CFL condition for timestep
+#define DENSITY 1000.0f
+#define KCFL 5 // constant for CFL condition for timestep
 #define DAMPENING 0.7f
+#define NONE -1
+#define AIR 0
+#define FLUID 1
+#define SOLID 2
+
 
 
 using namespace std;
@@ -67,6 +72,7 @@ public:
     vector<vector<vector<float> > > xvelocityNew; // new velocities store differences
     vector<vector<vector<float> > > yvelocityNew;
     vector<vector<vector<float> > > zvelocityNew;
+    vector<vector<vector<float> > > gridComponents;
     vector<vector<vector<vector<Particle> > > > particleCopies;
     void computePressure();
     void setParticles(vector<Particle>*);

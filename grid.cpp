@@ -35,14 +35,22 @@ Grid::Grid(float xdim, float ydim, float zdim, float h) {
     setupVector(yvelocityNew, xcells, ycells+1, zcells);
     setupVector(zvelocityNew, xcells, ycells, zcells+1);
     
-    // set up 3d vector that stores copies of particles
+    // sets up two 3d vectors that stores respectively
+    // copies of particles and what component is in grid
     particleCopies.resize(xcells);
+    gridComponents.resize(xcells);
     for (int i = 0; i < xcells; i++) {
         particleCopies[i].resize(ycells);
+        gridComponents[i].resize(ycells);
         for (int j = 0; j < ycells; j++) {
             particleCopies[i][j].resize(zcells);
+            gridComponents[i][j].resize(zcells);
         }
     }
+}
+
+void Grid::setParticles(vector<Particle>* particles) {
+    Grid::particles = particles;
 }
 
 void Grid::setupVector(vector<vector<vector<float> > >& vec, int xsize, int ysize, int zsize) {
@@ -58,13 +66,9 @@ void Grid::setupVector(vector<vector<vector<float> > >& vec, int xsize, int ysiz
     }
 }
 
-void Grid::setParticles(vector<Particle>* particles) {
-    Grid::particles = particles;
-}
-
 // clear particleCopies and copy all new particles into it
 // store a pointer in each particle copy to its original particle (done in Particle constructor)
-// also store the velocity of the particle with the maximum velocity for timestep calculations - TODO test this
+// also store the velocity of the particle with the maximum velocity for timestep calculations
 void Grid::setupParticleGrid() {
     // clear the grid of old copies of particles
     clearParticleCopies();
@@ -74,6 +78,9 @@ void Grid::setupParticleGrid() {
         vec3 cell = getCell((*particles)[i]);
         Particle copy((*particles)[i]);
         particleCopies[(int)cell.x][(int)cell.y][(int)cell.z].push_back(copy);
+        
+        // TODO -- Have this also iterate over some solid array
+        gridComponents[(int)cell.x][(int)cell.y][(int)cell.z] = FLUID;
         if (length((*particles)[i].vel) > maxVelocity) {
             maxVelocity = length((*particles)[i].vel);
         }
@@ -90,12 +97,13 @@ vec3 Grid::getCell(Particle& particle) {
     return cell;
 }
 
-// clear the particleCopies grid
+// clear the particleCopies and gridComponents grid
 void Grid::clearParticleCopies() {
     for (int i = 0; i < xcells; i++) {
         for (int j = 0; j < ycells; j++) {
             for (int k = 0; k < zcells; k++) {
                 particleCopies[i][j][k].clear();
+                gridComponents[i][j][k] = NONE;
             }
         }
     }
@@ -103,10 +111,7 @@ void Grid::clearParticleCopies() {
 
 
 void Grid::computePressure(){
-    float deltaT=1.0;
-    float density=1.0;
     int size=xcells*ycells*zcells;
-    //printf("size = %i, xcells = %i, ycells = %i, zcells = %i\n", size, xcells, ycells, zcells);
     double x[size];
     double b[size];
     vector<float> val;
@@ -120,9 +125,10 @@ void Grid::computePressure(){
         for (int j=0; j<ycells; j++){
             for (int k=0; k<zcells; k++){
                 int n=0;
+                int ns=6;
                 bool fx, fy, fz;
                 if (i>0){
-                    if (particleCopies[i-1][j][k].size()!=0){
+                    if (gridComponents[i-1][j][k]==FLUID){
                         //printf("#1\n");
                         val.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
                         ival.push_back(k+zcells*j+zcells*ycells*(i-1));
@@ -130,8 +136,7 @@ void Grid::computePressure(){
                     }
                 }
                 if (j>0){
-                    if (particleCopies[i][j-1][k].size()!=0){
-                        //printf("#6\n");
+                    if (gridComponents[i][j-1][k]==FLUID){
                         val.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
                         ival.push_back(k+zcells*(j-1)+zcells*ycells*i);
                         n++;
@@ -139,8 +144,7 @@ void Grid::computePressure(){
                     
                 }
                 if (k>0) {
-                    if (particleCopies[i][j][k-1].size()!=0){
-                        //printf("#10\n");
+                    if (gridComponents[i][j][k-1]==FLUID){
                         val.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
                         ival.push_back(k-1+zcells*j+zcells*ycells*i);
                         n++;
@@ -148,31 +152,43 @@ void Grid::computePressure(){
                     
                 }
                 if (k<zcells-1){
-                    if (particleCopies[i][j][k+1].size()!=0){
-                        //printf("#9\n");
+                    if (gridComponents[i][j][k+1]==FLUID){
                         tempval.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
                         tempival.push_back(k+1+zcells*j+zcells*ycells*i);
                         n++;
                     }
                 }
                 if (j<ycells-1){
-                    if (particleCopies[i][j+1][k].size()!=0){
-                        //printf("#8\n");
+                    if (gridComponents[i][j+1][k]==FLUID){
                         tempval.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
                         tempival.push_back(k+zcells*(j+1)+zcells*ycells*i);
                         n++;
                     }
                     
                 } if (i<xcells-1){
-                    if (particleCopies[i+1][j][k].size()!=0){
-                        //printf("#4\n");
+                    if (gridComponents[i+1][j][k]==FLUID){
                         tempval.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
                         tempival.push_back(k+zcells*j+zcells*ycells*(i+1));
                         n++;
                     }
                 }
-                if (particleCopies[i][j][k].size()!=0){
-                    val.push_back((1/DENSITY)*(timeStep)*n/(h*h));
+                if (i==0){
+                    ns--;
+                    if (j==0){
+                        ns--;
+                        if (k==0){
+                            ns--;
+                        } else if (k==zcells-1){
+                            ns--;
+                        }
+                    } else if (j==ycells-1){
+                        ns--;
+                    }
+                } else if (i==xcells-1){
+                    ns--;
+                }
+                if (gridComponents[i][j][k]==FLUID){
+                    val.push_back((1/DENSITY)*(timeStep)*ns/(h*h));
                     ival.push_back(k+zcells*j+zcells*ycells*i);
                     n++;
                 }
@@ -184,47 +200,49 @@ void Grid::computePressure(){
                 tempival.clear();
                 colCounter+=n;
                 rval.push_back(colCounter);
-                if (colCounter!=0){
-                    //printf(" i = %i, j = %i, k = %i, n = %i, val on diag = %f\n", i, j, k, n, val[colCounter-1]);
-                }
-                b[k+zcells*j+zcells*ycells*i]=(-1)*(xvelocityOld[i+1][j][k]-xvelocityOld[i][j][k]+yvelocityOld[i][j+1][k]-yvelocityOld[i][j][k]+zvelocityOld[i][j][k+1]-zvelocityOld[i][j][k])/h;
-                //printf("b value = %f\n", b[k+zcells*j+zcells*ycells*i]);
+                b[k+zcells*j+zcells*ycells*i] = (-1)*(xvelocityOld[i+1][j][k]-xvelocityOld[i][j][k]
+                                                     +yvelocityOld[i][j+1][k]-yvelocityOld[i][j][k]
+                                                     +zvelocityOld[i][j][k+1]-zvelocityOld[i][j][k])/h;
             }
         }
     }
-    
-    int it=150;
-    int tol=1.e-6;
     int c=val.size();
-    int d=ival.size();
     double value[c];
     int ivalue[c];
     int pvalue[rval.size()];
-    //printf("val size = %i, ival size = %i\n",c,d);
     for (int g=0;g<ival.size();g++){
         ivalue[g]=ival[g];
         value[g]=1;
-        //printf("ivalue = %i, value = %f, g = %i\n",ivalue[g],value[g],g);
     }
     for (int m=0;m<rval.size();m++){
         pvalue[m]=rval[m];
-        //printf("rval= = %i m = %i\n", rval[m],m);
     }
     int status;
     double *null = (double *) NULL ;
-    int i ;
+    int i,j,k;
     void *Symbolic, *Numeric ;
     status = umfpack_di_symbolic (size, size, pvalue, ivalue, value, &Symbolic, null, null) ;
     status = umfpack_di_numeric (pvalue, ivalue, value, Symbolic, &Numeric, null, null);
     umfpack_di_free_symbolic (&Symbolic) ;
     status = umfpack_di_solve (UMFPACK_At, pvalue, ivalue, value, x, b, Numeric, null, null) ;
     umfpack_di_free_numeric (&Numeric) ;
-     
-     
+    for (i = 0; i<xcells; i++){
+        for (j = 0; j<ycells; j++){
+            for (k = 0; k<zcells; k++){
+                if (isfinite(x[k+j*zcells+i*ycells*zcells])){
+                    pressures[i][j][k]=x[k+j*zcells+i*ycells*zcells];
+                } else {
+                    pressures[i][j][k]=0.0;
+                }
+            }
+        }
+    }
+    for (i=0;i<size;i++) {printf("x[%i]= %f\n",i,x[i]);}
+    
 }
 
 
-// get all paticles within a radius of a point x,y,z
+// get all particles within a radius of a point x,y,z
 // neighbors include the cell we're in
 // radius = cell width
 vector<Particle> Grid::getNeighbors(float x, float y, float z, float radius) {
@@ -248,9 +266,9 @@ float Grid::distance(vec3 p1, vec3 p2) {
 
 
 vector<vector<Particle> > Grid::getCellNeighbors(float x, float y, float z) {
-    float xcell = std::min(std::max(0.0f, (float)floor((x+0.5f)/h)), std::max((float)xcells-1.0f, 0.0f));
-    float ycell = std::min(std::max(0.0f, (float)floor((y+0.5f)/h)), std::max((float)ycells-1.0f, 0.0f));
-    float zcell = std::min(std::max(0.0f, (float)floor((z+0.5f)/h)), std::max((float)zcells-1.0f, 0.0f));
+    float xcell = std::min(std::max(0.0f, (float)floor((x)/h)), std::max((float)xcells-1.0f, 0.0f));
+    float ycell = std::min(std::max(0.0f, (float)floor((y)/h)), std::max((float)ycells-1.0f, 0.0f));
+    float zcell = std::min(std::max(0.0f, (float)floor((z)/h)), std::max((float)zcells-1.0f, 0.0f));
     
     float xplus = std::min(xcell + 1.0f, xcells - 1.0f);
     float yplus = std::min(ycell + 1.0f, ycells - 1.0f);
@@ -403,7 +421,6 @@ void Grid::computeTimeStep() {
     }
 }
 
-// who the fuck knows
 vec3 Grid::getInterpolatedVelocityDifference(vec3 pt) {
     vec3 velDif;
     velDif.x = getInterpolatedValue(pt.x/h, pt.y/h-0.5f, pt.z/h-0.5f, xvelocityNew);
