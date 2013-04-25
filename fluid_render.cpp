@@ -97,6 +97,7 @@ void myDisplay(void) {
     
     // Render all particles
     glBegin(GL_POINTS);
+    #pragma omp parallel for
     for (int i = 0; i < particles.size(); i++) {
         glColor3f(0,0,1);
         glVertex3f(particles[i].pos.x, particles[i].pos.y, particles[i].pos.z);
@@ -117,8 +118,12 @@ void setupParticles() {
             for (int k = 0; k < 10; k++) {
                 Particle p(vec3(i+(rand() % 99) * 0.01,j+(rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(-5,0,0),vec3(1,0,0),vec3(1,0,0),1,1);
                 Particle p2(vec3(i + (rand() % 99) * 0.01,j + (rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(-5,0,0),vec3(1,0,0),vec3(1,0,0),1,1);
+                Particle p3(vec3(i+(rand() % 99) * 0.01,j+(rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(-5,0,0),vec3(1,0,0),vec3(1,0,0),1,1);
+                Particle p4(vec3(i + (rand() % 99) * 0.01,j + (rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(-5,0,0),vec3(1,0,0),vec3(1,0,0),1,1);
                 particles.push_back(p);
                 particles.push_back(p2);
+                particles.push_back(p3);
+                particles.push_back(p4);
             }
         }
     }
@@ -184,8 +189,8 @@ int main(int argc, char *argv[]) {
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     
     // Initalize theviewport size
-    viewport.w = 400;
-    viewport.h = 400;
+    viewport.w = 1000;
+    viewport.h = 1000;
     
     //The size and position of the window
     glutInitWindowSize(viewport.w, viewport.h);

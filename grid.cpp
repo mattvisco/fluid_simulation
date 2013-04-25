@@ -32,6 +32,7 @@ Grid::Grid(float xdim, float ydim, float zdim, float h) {
     
     // set up 3d vector that stores copies of particles
     particleCopies.resize(xcells);
+    #pragma omp parallel for
     for (int i = 0; i < xcells; i++) {
         particleCopies[i].resize(ycells);
         for (int j = 0; j < ycells; j++) {
@@ -42,6 +43,7 @@ Grid::Grid(float xdim, float ydim, float zdim, float h) {
 
 void Grid::setupVector(vector<vector<vector<float> > >& vec, int xsize, int ysize, int zsize) {
     vec.resize(xsize);
+    #pragma omp parallel for
     for (int i = 0; i < xsize; i++) {
         vec[i].resize(ysize);
         for (int j = 0; j < ysize; j++) {
@@ -87,6 +89,7 @@ vec3 Grid::getCell(Particle& particle) {
 
 // clear the particleCopies grid
 void Grid::clearParticleCopies() {
+    #pragma omp parallel for
     for (int i = 0; i < xcells; i++) {
         for (int j = 0; j < ycells; j++) {
             for (int k = 0; k < zcells; k++) {
@@ -143,6 +146,7 @@ vector<vector<Particle> > Grid::getCellNeighbors(float x, float y, float z) {
 // at each velocity grid point (in center of cell faces), compute and store a weighted average of particle velocites within a **sphere** of radius h
 void Grid::storeOldVelocities() {
     // x
+    #pragma omp parallel for
     for (int i=0; i < xcells+1; i++) {
         for (int j=0; j < ycells; j++) {
             for (int k=0; k < zcells; k++) {
@@ -153,6 +157,7 @@ void Grid::storeOldVelocities() {
         }
     }
     // y
+    #pragma omp parallel for
     for (int i=0; i < xcells; i++) {
         for (int j=0; j < ycells+1; j++) {
             for (int k=0; k < zcells; k++) {
@@ -163,6 +168,7 @@ void Grid::storeOldVelocities() {
         }
     }
     // z
+    #pragma omp parallel for
     for (int i=0; i < xcells; i++) {
         for (int j=0; j < ycells; j++) {
             for (int k=0; k < zcells+1; k++) {
@@ -203,6 +209,7 @@ float Grid::weightedAverage(vector<Particle> particles, vec3 pt, int AXIS) {
 //Do all the non-advection steps of a standard water simulator on the grid.
 void Grid::computeNonAdvection() {
     // x
+    #pragma omp parallel for
     for (int i=0; i < xcells+1; i++) {
         for (int j=0; j < ycells; j++) {
             for (int k=0; k < zcells; k++) {
@@ -212,6 +219,7 @@ void Grid::computeNonAdvection() {
         }
     }
     // y
+    #pragma omp parallel for
     for (int i=0; i < xcells; i++) {
         for (int j=0; j < ycells+1; j++) {
             for (int k=0; k < zcells; k++) {
@@ -222,6 +230,7 @@ void Grid::computeNonAdvection() {
         }
     }
     // z
+    #pragma omp parallel for
     for (int i=0; i < xcells; i++) {
         for (int j=0; j < ycells; j++) {
             for (int k=0; k < zcells+1; k++) {
@@ -333,6 +342,7 @@ float Grid::getInterpolatedValue(float x, float y, float z, vector<vector<vector
 }
 
 void Grid::updateParticleVels() {
+    #pragma omp parallel for
     for (int i = 0; i < (*particles).size(); i++) {
         (*particles)[i].vel += getInterpolatedVelocityDifference((*particles)[i].pos);
     }
