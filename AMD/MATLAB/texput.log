@@ -1,0 +1,15 @@
+This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012) (format=mex 2012.6.30)  23 APR 2013 14:39
+entering extended mode
+ restricted \write18 enabled.
+ %&-line parsing enabled.
+**amd2 amd_mex.c ../Source/amd_1.c ../Source/amd_2.c ../Source/amd_aat.c ../Sou
+rce/amd_control.c ../Source/amd_defaults.c ../Source/amd_dump.c ../Source/amd_g
+lobal.c ../Source/amd_info.c ../Source/amd_order.c ../Source/amd_postorder.c ..
+/Source/amd_post_tree.c ../Source/amd_preprocess.c ../Source/amd_valid.c
+
+! Emergency stop.
+<*> amd2 
+         amd_mex.c ../Source/amd_1.c ../Source/amd_2.c ../Source/amd_aat.c ....
+End of file on the terminal!
+
+No pages of output.

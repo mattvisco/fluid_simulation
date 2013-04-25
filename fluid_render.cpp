@@ -42,7 +42,8 @@ float xrot,yrot,zrot,xtrans,ytrans,zoom;
 void initScene(){
     glClearColor (0.0, 0.0, 0.0, 0.0);
     glClearDepth(1.0);
-    
+    //Simulator simulator(particles);
+    //Particle h;
     simulator = Simulator(&particles, gridX, gridY, gridZ, cellSize);
 }
 
@@ -224,11 +225,14 @@ int main(int argc, char *argv[]) {
 //    cout << "particle3 " << particles[2].pos.x << " " << particles[2].pos.y << " " << particles[2].pos.z << " " << particles[2].vel.x << " " << particles[2].vel.y << " " << particles[2].vel.z << "\n"; 
 //    cout << "particle4 " << particles[3].pos.x << " " << particles[3].pos.y << " " << particles[3].pos.z << " " << particles[3].vel.x << " " << particles[3].vel.y << " " << particles[3].vel.z << "\n"; 
     
+
+
     glutDisplayFunc(myDisplay);				// function to run when its time to draw something
     glutReshapeFunc(myReshape);				// function to run when the window gets resized
     glutIdleFunc(myDisplay);
     glutKeyboardFunc(keyboard);               // to do key things
     glutSpecialFunc(special);
+
     
     glutMainLoop();	// infinite loop that will keep drawing and resizing
     

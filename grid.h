@@ -5,16 +5,22 @@
 
 #ifndef ____grid__
 #define ____grid__
+//#define COMPLEX std::complex<double>
 
 #include <vector>
+#include <stdlib.h>
 #include <fstream>
 #include <sstream>
 #include <cmath>
+#include <stdio.h>
 
 #include <sys/time.h>
-
 #include "glm/glm.hpp"
 #include <time.h>
+
+#include "UMFPACK/Include/umfpack.h"
+#include <Accelerate/Accelerate.h>
+
 
 #define PI 3.14159265
 #define epsilon .0001
@@ -22,7 +28,10 @@
 #include <iostream>
 #include <math.h>
 
+
+#include "grid.h"
 #include "particle.h"
+
 
 #define X_AXIS 0
 #define Y_AXIS 1
@@ -31,6 +40,12 @@
 #define DENSITY 1.0f
 #define KCFL 1 // constant for CFL condition for timestep
 #define DAMPENING 0.7f
+#define NONE -1
+#define AIR 0
+#define FLUID 1
+#define SOLID 2
+
+
 
 using namespace std;
 using namespace glm;
@@ -43,6 +58,7 @@ public:
     float xdim; // in real world size
     float ydim;
     float zdim;
+    float boundaryC;
     int xcells; // number of cells
     int ycells;
     int zcells;
@@ -56,14 +72,16 @@ public:
     vector<vector<vector<float> > > xvelocityNew; // new velocities store differences
     vector<vector<vector<float> > > yvelocityNew;
     vector<vector<vector<float> > > zvelocityNew;
+    vector<vector<vector<float> > > gridComponents;
     vector<vector<vector<vector<Particle> > > > particleCopies;
+    void computePressure();
     void setParticles(vector<Particle>*);
     void setupVector(vector<vector<vector<float> > >&, int, int, int);
     void clearParticleCopies();
     void setupParticleGrid();
-    vector<Particle> getNeighbors(Particle);
     vec3 getCell(Particle&);
     void clearGrid();
+
     vector<Particle> getNeighbors(float,float,float,float);
     vector<vector<Particle> > getCellNeighbors(float,float,float);
     float distance(vec3,vec3);

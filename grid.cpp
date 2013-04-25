@@ -9,15 +9,20 @@
 
 #include "grid.h"
 
+
+
+
+
 Grid::Grid(float xdim, float ydim, float zdim, float h) {
     Grid::xdim = xdim;
     Grid::ydim = ydim;
     Grid::zdim = zdim;
     Grid::h = h;
-        
-    Grid::xcells = (int)(xdim/h);
-    Grid::ycells = (int)(ydim/h);
-    Grid::zcells = (int)(zdim/h);
+    Grid:boundaryC=1.0;
+    
+    Grid::xcells = (int)xdim/h;
+    Grid::ycells = (int)ydim/h;
+    Grid::zcells = (int)zdim/h;
     
     // set up each 3d vector and initialize the entries of each cell
     setupVector(pressures, xcells, ycells, zcells);
@@ -30,15 +35,23 @@ Grid::Grid(float xdim, float ydim, float zdim, float h) {
     setupVector(yvelocityNew, xcells, ycells+1, zcells);
     setupVector(zvelocityNew, xcells, ycells, zcells+1);
     
-    // set up 3d vector that stores copies of particles
+    // sets up two 3d vectors that stores respectively
+    // copies of particles and what component is in grid
     particleCopies.resize(xcells);
+    gridComponents.resize(xcells);
     #pragma omp parallel for
     for (int i = 0; i < xcells; i++) {
         particleCopies[i].resize(ycells);
+        gridComponents[i].resize(ycells);
         for (int j = 0; j < ycells; j++) {
             particleCopies[i][j].resize(zcells);
+            gridComponents[i][j].resize(zcells);
         }
     }
+}
+
+void Grid::setParticles(vector<Particle>* particles) {
+    Grid::particles = particles;
 }
 
 void Grid::setupVector(vector<vector<vector<float> > >& vec, int xsize, int ysize, int zsize) {
@@ -55,13 +68,9 @@ void Grid::setupVector(vector<vector<vector<float> > >& vec, int xsize, int ysiz
     }
 }
 
-void Grid::setParticles(vector<Particle>* particles) {
-    Grid::particles = particles;
-}
-
 // clear particleCopies and copy all new particles into it
 // store a pointer in each particle copy to its original particle (done in Particle constructor)
-// also store the velocity of the particle with the maximum velocity for timestep calculations - TODO test this
+// also store the velocity of the particle with the maximum velocity for timestep calculations
 void Grid::setupParticleGrid() {
     // clear the grid of old copies of particles
     clearParticleCopies();
@@ -71,6 +80,9 @@ void Grid::setupParticleGrid() {
         vec3 cell = getCell((*particles)[i]);
         Particle copy((*particles)[i]);
         particleCopies[(int)cell.x][(int)cell.y][(int)cell.z].push_back(copy);
+        
+        // TODO -- Have this also iterate over some solid array
+        gridComponents[(int)cell.x][(int)cell.y][(int)cell.z] = FLUID;
         if (length((*particles)[i].vel) > maxVelocity) {
             maxVelocity = length((*particles)[i].vel);
         }
@@ -87,19 +99,199 @@ vec3 Grid::getCell(Particle& particle) {
     return cell;
 }
 
-// clear the particleCopies grid
+// clear the particleCopies and gridComponents grid
 void Grid::clearParticleCopies() {
     #pragma omp parallel for
     for (int i = 0; i < xcells; i++) {
         for (int j = 0; j < ycells; j++) {
             for (int k = 0; k < zcells; k++) {
                 particleCopies[i][j][k].clear();
+                gridComponents[i][j][k] = NONE;
             }
         }
     }
 }
 
-// get all paticles within a radius of a point x,y,z
+
+void Grid::computePressure(){
+    int size=xcells*ycells*zcells;
+    printf("size = %i, xcells = %i, ycells = %i, zcells = %i\n", size, xcells, ycells, zcells);
+    double x[size];
+    double b[size];
+    vector<float> val;
+    vector<int> ival;
+    vector<int> rval;
+    int colCounter=0;
+    rval.push_back(colCounter);
+    for (int i=0;i<xcells;i++){
+        for (int j=0; j<ycells; j++){
+            for (int k=0; k<zcells; k++){
+                int n=0;
+                if (i==0){
+                    if (particleCopies[i+1][j][k].size()!=0){
+                        //printf("#1\n");
+                        val.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
+                        ival.push_back(k+zcells*j+zcells*ycells*(i+1));
+                        n++;
+                    }
+                } else if (i==xcells-1){
+                    if (particleCopies[i-1][j][k].size()!=0){
+                        //printf("#2\n");
+                        val.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
+                        ival.push_back(k+zcells*j+zcells*ycells*(i-1));
+                        n++;
+                    }
+                } else {
+                    if (particleCopies[i-1][j][k].size()!=0){
+                        //printf("#3\n");
+                        val.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
+                        ival.push_back(k+zcells*j+zcells*ycells*(i-1));
+                        n++;
+                    }
+                    if (particleCopies[i+1][j][k].size()!=0){
+                        //printf("#4\n");
+                        val.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
+                        ival.push_back(k+zcells*j+zcells*ycells*(i+1));
+                        n++;
+                    }
+                }
+                if (j==0){
+                    if (particleCopies[i][j+1][k].size()!=0){
+                        //printf("#5\n");
+                        val.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
+                        ival.push_back(k+zcells*(j+1)+zcells*ycells*i);
+                        n++;
+                    }
+                } else if (j==ycells-1){
+                    if (particleCopies[i][j-1][k].size()!=0){
+                        //printf("#6\n");
+                        val.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
+                        ival.push_back(k+zcells*(j-1)+zcells*ycells*i);
+                        n++;
+                    }
+                } else {
+                    if (particleCopies[i][j-1][k].size()!=0){
+                        //printf("#7\n");
+                        val.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
+                        ival.push_back(k+zcells*(j-1)+zcells*ycells*i);
+                        n++;
+                    }
+                    if (particleCopies[i][j+1][k].size()!=0){
+                        //printf("#8\n");
+                        val.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
+                        ival.push_back(k+zcells*(j+1)+zcells*ycells*i);
+                        n++;
+                    }
+                }
+                if (k==0){
+                    if (particleCopies[i][j][k+1].size()!=0){
+                        //printf("#9\n");
+                        val.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
+                        ival.push_back(k+1+zcells*j+zcells*ycells*i);
+                        n++;
+                    }
+                } else if (k==zcells-1){
+                    if (particleCopies[i][j][k-1].size()!=0){
+                        //printf("#10\n");
+                        val.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
+                        ival.push_back(k-1+zcells*j+zcells*ycells*i);
+                        n++;
+                    }
+                } else {
+                    if (particleCopies[i][j][k-1].size()!=0){
+                        //printf("#11\n");
+                        val.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
+                        ival.push_back(k-1+zcells*j+zcells*ycells*i);
+                        n++;
+                    }
+                    if (particleCopies[i][j][k+1].size()!=0){
+                        //printf("#12\n");
+                        val.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
+                        ival.push_back(k+1+zcells*j+zcells*ycells*i);
+                        n++;
+                    }
+                }
+                if (particleCopies[i][j][k].size()!=0){
+                    val.push_back((1/DENSITY)*(timeStep)*n/(h*h));
+                    ival.push_back(k+zcells*j+zcells*ycells*i);
+                    colCounter+=n+1;
+                    rval.push_back(colCounter);
+                    
+                } else {
+                    colCounter+=n;
+                    rval.push_back(colCounter);
+                }
+                b[k+zcells*j+zcells*ycells*i] = (-1)*(xvelocityOld[i+1][j][k]-xvelocityOld[i][j][k]
+                                                     +yvelocityOld[i][j+1][k]-yvelocityOld[i][j][k]
+                                                     +zvelocityOld[i][j][k+1]-zvelocityOld[i][j][k])/h;
+                //printf("b value = %f\n", b[k+zcells*j+zcells*ycells*i]);
+            }
+        }
+    }
+    
+    int it=150;
+    int tol=1.e-6;
+    int c=val.size();
+    int d=ival.size();
+    double value[c];
+    int ivalue[c];
+    int pvalue[rval.size()];
+    printf("val size = %i, ival size = %i\n",c,d);
+    for (int g=0;g<ival.size();g++){
+        ivalue[g]=ival[g];
+        value[g]=val[g];
+        //printf("ivalue = %i, value = %f, g = %i\n",ivalue[g],value[g],g);
+    }
+    for (int m=0;m<rval.size();m++){
+        pvalue[m]=rval[m];
+        //printf("rval= = %i m = %i\n", rval[m],m);
+    }
+    int status;
+    double *null = (double *) NULL ;
+    int i ;
+    void *Symbolic, *Numeric ;
+    status = umfpack_di_symbolic (size, size, pvalue, ivalue, value, &Symbolic, null, null) ;
+    printf("Checkpoint1\n");
+    if (status==UMFPACK_OK){
+        printf("yes\n");
+    } else {
+        printf("%i\n",status);
+    }
+    status = umfpack_di_numeric (pvalue, ivalue, value, Symbolic, &Numeric, null, null);
+    printf("Checkpoint2\n");
+    if (status==UMFPACK_OK){
+        printf("yes\n");
+    } else {
+        printf("%i\n",status);
+    }
+    
+    umfpack_di_free_symbolic (&Symbolic) ;
+    printf("Checkpoint3\n");
+    status = umfpack_di_solve (UMFPACK_At, pvalue, ivalue, value, x, b, Numeric, null, null) ;
+    if (status==UMFPACK_OK){
+        printf("yes\n");
+    } else {
+        printf("%i\n",status);
+    }
+    printf("Checkpoint4\n");
+    //umfpack_di_free_numeric (&Numeric) ;
+    for (i = 0 ; i < size ; i++) printf ("x [%d] = %g\n", i, x [i]) ;
+    exit(0);
+    /*
+    for (int ii=0;ii<xcells;ii++){
+        for (int jj=0;jj<ycells;jj++){
+            for (int kk=0;kk<zcells;kk++){
+                pressures[ii][jj][kk]=x[kk+zcells*jj+zcells*ycells*ii];
+            }
+        }
+    }
+     */
+     
+     
+}
+
+
+// get all particles within a radius of a point x,y,z
 // neighbors include the cell we're in
 // radius = cell width
 vector<Particle> Grid::getNeighbors(float x, float y, float z, float radius) {
@@ -118,6 +310,7 @@ vector<Particle> Grid::getNeighbors(float x, float y, float z, float radius) {
 float Grid::distance(vec3 p1, vec3 p2) {
     return length(p1 - p2);
 }
+
 
 vector<vector<Particle> > Grid::getCellNeighbors(float x, float y, float z) {
     float xcell = std::min(std::max(0.0f, (float)floor((x+0.5f)/h)), std::max((float)xcells-1.0f, 0.0f));
@@ -208,13 +401,14 @@ float Grid::weightedAverage(vector<Particle> particles, vec3 pt, int AXIS) {
 
 //Do all the non-advection steps of a standard water simulator on the grid.
 void Grid::computeNonAdvection() {
+    computePressure();
     // x
     #pragma omp parallel for
     for (int i=0; i < xcells+1; i++) {
         for (int j=0; j < ycells; j++) {
             for (int k=0; k < zcells; k++) {
                 xvelocityNew[i][j][k] = 0.0f;
-                //xvelocityNew[i][j][k] += computePressureToAdd(i,j,k,X_AXIS);
+                xvelocityNew[i][j][k] += computePressureToAdd(i,j,k,X_AXIS);
             }
         }
     }
@@ -225,7 +419,7 @@ void Grid::computeNonAdvection() {
             for (int k=0; k < zcells; k++) {
                 yvelocityNew[i][j][k] = 0.0f;
                 yvelocityNew[i][j][k] += computeGravityToAdd();
-                //yvelocityNew[i][j][k] += computePressureToAdd(i,j,k,Y_AXIS);
+                yvelocityNew[i][j][k] += computePressureToAdd(i,j,k,Y_AXIS);
             }
         }
     }
@@ -235,7 +429,7 @@ void Grid::computeNonAdvection() {
         for (int j=0; j < ycells; j++) {
             for (int k=0; k < zcells+1; k++) {
                 zvelocityNew[i][j][k] = 0.0f;
-                //zvelocityNew[i][j][k] += computePressureToAdd(i,j,k,Z_AXIS);
+                zvelocityNew[i][j][k] += computePressureToAdd(i,j,k,Z_AXIS);
             }
         }
     }
@@ -247,6 +441,7 @@ float Grid::computeGravityToAdd() {
 
 // compute the change in velocity due to pressure for a cell face
 float Grid::computePressureToAdd(int i, int j, int k, int AXIS) {
+    
     switch (AXIS) {
         case X_AXIS:
             if (i-1 < 0 || i >= xcells) {
@@ -279,7 +474,6 @@ void Grid::computeTimeStep() {
     }
 }
 
-// who the fuck knows
 vec3 Grid::getInterpolatedVelocityDifference(vec3 pt) {
     vec3 velDif;
     velDif.x = getInterpolatedValue(pt.x/h, pt.y/h-0.5f, pt.z/h-0.5f, xvelocityNew);
