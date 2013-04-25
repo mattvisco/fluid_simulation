@@ -10,8 +10,6 @@
 
 inline float sqr(float x) { return x*x; }
 
-using namespace std;
-using namespace glm;
 
 Simulator::Simulator(vector<Particle>* particles, Grid grid) {
     Simulator::particles = particles;
