@@ -2,7 +2,7 @@
 //  fluid_simulator.h
 //  
 //
-//  Created by Matthew Visco and JustinJUSTINJUSTIN  on 4/15/13.
+//  Created by Matthew Visco and JustinSUCKSTITYBALLS on 4/15/13.
 //
 //
 
