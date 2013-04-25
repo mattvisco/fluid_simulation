@@ -35,14 +35,22 @@ Grid::Grid(float xdim, float ydim, float zdim, float h) {
     setupVector(yvelocityNew, xcells, ycells+1, zcells);
     setupVector(zvelocityNew, xcells, ycells, zcells+1);
     
-    // set up 3d vector that stores copies of particles
+    // sets up two 3d vectors that stores respectively
+    // copies of particles and what component is in grid
     particleCopies.resize(xcells);
+    gridComponents.resize(xcells);
     for (int i = 0; i < xcells; i++) {
         particleCopies[i].resize(ycells);
+        gridComponents[i].resize(ycells);
         for (int j = 0; j < ycells; j++) {
             particleCopies[i][j].resize(zcells);
+            gridComponents[i][j].resize(zcells);
         }
     }
+}
+
+void Grid::setParticles(vector<Particle>* particles) {
+    Grid::particles = particles;
 }
 
 void Grid::setupVector(vector<vector<vector<float> > >& vec, int xsize, int ysize, int zsize) {
@@ -58,13 +66,9 @@ void Grid::setupVector(vector<vector<vector<float> > >& vec, int xsize, int ysiz
     }
 }
 
-void Grid::setParticles(vector<Particle>* particles) {
-    Grid::particles = particles;
-}
-
 // clear particleCopies and copy all new particles into it
 // store a pointer in each particle copy to its original particle (done in Particle constructor)
-// also store the velocity of the particle with the maximum velocity for timestep calculations - TODO test this
+// also store the velocity of the particle with the maximum velocity for timestep calculations
 void Grid::setupParticleGrid() {
     // clear the grid of old copies of particles
     clearParticleCopies();
@@ -74,6 +78,9 @@ void Grid::setupParticleGrid() {
         vec3 cell = getCell((*particles)[i]);
         Particle copy((*particles)[i]);
         particleCopies[(int)cell.x][(int)cell.y][(int)cell.z].push_back(copy);
+        
+        // TODO -- Have this also iterate over some solid array
+        gridComponents[(int)cell.x][(int)cell.y][(int)cell.z] = FLUID;
         if (length((*particles)[i].vel) > maxVelocity) {
             maxVelocity = length((*particles)[i].vel);
         }
@@ -90,12 +97,13 @@ vec3 Grid::getCell(Particle& particle) {
     return cell;
 }
 
-// clear the particleCopies grid
+// clear the particleCopies and gridComponents grid
 void Grid::clearParticleCopies() {
     for (int i = 0; i < xcells; i++) {
         for (int j = 0; j < ycells; j++) {
             for (int k = 0; k < zcells; k++) {
                 particleCopies[i][j][k].clear();
+                gridComponents[i][j][k] = NONE;
             }
         }
     }
@@ -103,8 +111,6 @@ void Grid::clearParticleCopies() {
 
 
 void Grid::computePressure(){
-    float deltaT=1.0;
-    float density=1.0;
     int size=xcells*ycells*zcells;
     printf("size = %i, xcells = %i, ycells = %i, zcells = %i\n", size, xcells, ycells, zcells);
     double x[size];
@@ -212,7 +218,9 @@ void Grid::computePressure(){
                     colCounter+=n;
                     rval.push_back(colCounter);
                 }
-                b[k+zcells*j+zcells*ycells*i]=(-1)*(xvelocityOld[i+1][j][k]-xvelocityOld[i][j][k]+yvelocityOld[i][j+1][k]-yvelocityOld[i][j][k]+zvelocityOld[i][j][k+1]-zvelocityOld[i][j][k])/h;
+                b[k+zcells*j+zcells*ycells*i] = (-1)*(xvelocityOld[i+1][j][k]-xvelocityOld[i][j][k]
+                                                     +yvelocityOld[i][j+1][k]-yvelocityOld[i][j][k]
+                                                     +zvelocityOld[i][j][k+1]-zvelocityOld[i][j][k])/h;
                 //printf("b value = %f\n", b[k+zcells*j+zcells*ycells*i]);
             }
         }
@@ -280,7 +288,7 @@ void Grid::computePressure(){
 }
 
 
-// get all paticles within a radius of a point x,y,z
+// get all particles within a radius of a point x,y,z
 // neighbors include the cell we're in
 // radius = cell width
 vector<Particle> Grid::getNeighbors(float x, float y, float z, float radius) {
@@ -457,7 +465,6 @@ void Grid::computeTimeStep() {
     }
 }
 
-// who the fuck knows
 vec3 Grid::getInterpolatedVelocityDifference(vec3 pt) {
     vec3 velDif;
     velDif.x = getInterpolatedValue(pt.x/h, pt.y/h-0.5f, pt.z/h-0.5f, xvelocityNew);
