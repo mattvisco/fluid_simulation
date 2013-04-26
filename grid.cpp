@@ -264,7 +264,7 @@ void Grid::computePressure(){
 }
 
 
-// get all particles within a radius of a point x,y,z
+// get all particles within a cube of size radius of a point x,y,z
 // neighbors include the cell we're in
 // radius = cell width
 vector<Particle> Grid::getNeighbors(float x, float y, float z, float radius) {
@@ -272,8 +272,8 @@ vector<Particle> Grid::getNeighbors(float x, float y, float z, float radius) {
     vector<Particle> neighbors;
     for (int i = 0; i < cellNeighbors.size(); i++) {
         for (int j = 0; j < cellNeighbors[i].size(); j++) {
-            if (distance(cellNeighbors[i][j].pos, vec3(x,y,z)) <= radius) { // < vs. <= ? --- this is a sphere.....
-                neighbors.push_back(cellNeighbors[i][j]);
+            if (cellNeighbors[i][j].pos.x >= x-radius && cellNeighbors[i][j].pos.x < x+radius && cellNeighbors[i][j].pos.y >= y-radius && cellNeighbors[i][j].pos.y < y+radius && cellNeighbors[i][j].pos.z >= z-radius && cellNeighbors[i][j].pos.z < z+radius) {
+                    neighbors.push_back(cellNeighbors[i][j]);
             }
         }
     }
@@ -377,7 +377,7 @@ void Grid::computeNonAdvection() {
         for (int j=0; j < ycells; j++) {
             for (int k=0; k < zcells; k++) {
                 xvelocityNew[i][j][k] = 0.0f;
-                xvelocityNew[i][j][k] += computePressureToAdd(i,j,k,X_AXIS);
+                xvelocityNew[i][j][k] += KPRES*computePressureToAdd(i,j,k,X_AXIS);
             }
         }
     }
@@ -387,7 +387,7 @@ void Grid::computeNonAdvection() {
             for (int k=0; k < zcells; k++) {
                 yvelocityNew[i][j][k] = 0.0f;
                 yvelocityNew[i][j][k] += computeGravityToAdd();
-                yvelocityNew[i][j][k] += computePressureToAdd(i,j,k,Y_AXIS);
+                yvelocityNew[i][j][k] += KPRES*computePressureToAdd(i,j,k,Y_AXIS);
             }
         }
     }
@@ -396,7 +396,7 @@ void Grid::computeNonAdvection() {
         for (int j=0; j < ycells; j++) {
             for (int k=0; k < zcells+1; k++) {
                 zvelocityNew[i][j][k] = 0.0f;
-                zvelocityNew[i][j][k] += computePressureToAdd(i,j,k,Z_AXIS);
+                zvelocityNew[i][j][k] += KPRES*computePressureToAdd(i,j,k,Z_AXIS);
             }
         }
     }
@@ -411,20 +411,32 @@ float Grid::computePressureToAdd(int i, int j, int k, int AXIS) {
     
     switch (AXIS) {
         case X_AXIS:
-            if (i-1 < 0 || i >= xcells) {
+            if (i-1 < 0) {
                 return 0.0f;
+                //return -timeStep*1.0f/DENSITY*(pressures[i][j][k])/h;
+            } else if (i >= xcells) {
+                return 0.0f;
+                //return -timeStep*1.0f/DENSITY*(-pressures[i-1][j][k])/h;
             } else {
                 return -timeStep*1.0f/DENSITY*(pressures[i][j][k]-pressures[i-1][j][k])/h;
             }
         case Y_AXIS:
-            if (j-1 < 0 || j >= ycells) {
+            if (j-1 < 0) {
                 return 0.0f;
+                //return -timeStep*1.0f/DENSITY*(pressures[i][j][k])/h;
+            } else if (j >= ycells) {
+                return 0.0f;
+                //return -timeStep*1.0f/DENSITY*(-pressures[i][j-1][k])/h;
             } else {
                 return -timeStep*1.0f/DENSITY*(pressures[i][j][k]-pressures[i][j-1][k])/h;
             }
         case Z_AXIS:
-            if (k-1 < 0 || k >= zcells) {
+            if (k-1 < 0) {
                 return 0.0f;
+                //return -timeStep*1.0f/DENSITY*(pressures[i][j][k])/h;
+            } else if (k >= zcells) {
+                return 0.0f;
+                //return -timeStep*1.0f/DENSITY*(-pressures[i][j][k-1])/h;
             } else {
                 return -timeStep*1.0f/DENSITY*(pressures[i][j][k]-pressures[i][j][k-1])/h;
             }
