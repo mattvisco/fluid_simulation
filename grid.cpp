@@ -33,14 +33,18 @@ Grid::Grid(float xdim, float ydim, float zdim, float h) {
     
     // sets up two 3d vectors that stores respectively
     // copies of particles and what component is in grid
+    // also initializes layers vector for velocity extrapolation
     particleCopies.resize(xcells);
     gridComponents.resize(xcells);
+    layers.resize(xcells);
     for (int i = 0; i < xcells; i++) {
         particleCopies[i].resize(ycells);
         gridComponents[i].resize(ycells);
+        layers[i].resize(ycells);
         for (int j = 0; j < ycells; j++) {
             particleCopies[i][j].resize(zcells);
             gridComponents[i][j].resize(zcells);
+            layers[i][j].resize(zcells);
         }
     }
 }
@@ -177,6 +181,26 @@ int Grid::getAirNeighbors(vec3 p) {
     return airs;
 }
 
+vector<vec3> Grid::getvec3Neighbors(vec3 p) {
+    int i = (int)p.x;
+    int j = (int)p.y;
+    int k = (int)p.z;
+    vector<vec3> flds;
+    if (i+1 < xcells)
+        flds.push_back(vec3((float)i+1,(float)j,(float)k));
+    if (i-1 >= 0)
+        flds.push_back(vec3((float)i-1,(float)j,(float)k));
+    if (j+1 < ycells)
+        flds.push_back(vec3((float)i,(float)j+1,(float)k));
+    if (j-1 >= 0)
+        flds.push_back(vec3((float)i,(float)j-1,(float)k));
+    if (k+1 < zcells)
+        flds.push_back(vec3((float)i,(float)j,(float)k+1));
+    if (k-1 >= 0)
+        flds.push_back(vec3((float)i,(float)j,(float)k-1));
+    return flds;
+}
+
 // get divergence of cell u
 // not sure if forward difference is right
 float Grid::divergence(vec3 u) {
@@ -262,7 +286,7 @@ void Grid::computePressure(){
 }
 
 
-// get all particles within a radius of a point x,y,z
+// get all particles within a cube of size radius of a point x,y,z
 // neighbors include the cell we're in
 // radius = cell width
 vector<Particle> Grid::getNeighbors(float x, float y, float z, float radius) {
@@ -270,8 +294,8 @@ vector<Particle> Grid::getNeighbors(float x, float y, float z, float radius) {
     vector<Particle> neighbors;
     for (int i = 0; i < cellNeighbors.size(); i++) {
         for (int j = 0; j < cellNeighbors[i].size(); j++) {
-            if (distance(cellNeighbors[i][j].pos, vec3(x,y,z)) <= radius) { // < vs. <= ? --- this is a sphere.....
-                neighbors.push_back(cellNeighbors[i][j]);
+            if (cellNeighbors[i][j].pos.x >= x-radius && cellNeighbors[i][j].pos.x < x+radius && cellNeighbors[i][j].pos.y >= y-radius && cellNeighbors[i][j].pos.y < y+radius && cellNeighbors[i][j].pos.z >= z-radius && cellNeighbors[i][j].pos.z < z+radius) {
+                    neighbors.push_back(cellNeighbors[i][j]);
             }
         }
     }
@@ -307,7 +331,7 @@ vector<vector<Particle> > Grid::getCellNeighbors(float x, float y, float z) {
     return cellParticles;
 }
 
-// at each velocity grid point (in center of cell faces), compute and store a weighted average of particle velocites within a **sphere** of radius h
+// at each velocity grid point (in center of cell faces), compute and store a weighted average of particle velocites within a cube of radius h
 void Grid::storeOldVelocities() {
     // x
     for (int i=0; i < xcells+1; i++) {
@@ -375,7 +399,7 @@ void Grid::computeNonAdvection() {
         for (int j=0; j < ycells; j++) {
             for (int k=0; k < zcells; k++) {
                 xvelocityNew[i][j][k] = 0.0f;
-                xvelocityNew[i][j][k] += computePressureToAdd(i,j,k,X_AXIS);
+                xvelocityNew[i][j][k] += KPRES*computePressureToAdd(i,j,k,X_AXIS);
             }
         }
     }
@@ -385,7 +409,7 @@ void Grid::computeNonAdvection() {
             for (int k=0; k < zcells; k++) {
                 yvelocityNew[i][j][k] = 0.0f;
                 yvelocityNew[i][j][k] += computeGravityToAdd();
-                yvelocityNew[i][j][k] += computePressureToAdd(i,j,k,Y_AXIS);
+                yvelocityNew[i][j][k] += KPRES*computePressureToAdd(i,j,k,Y_AXIS);
             }
         }
     }
@@ -394,7 +418,7 @@ void Grid::computeNonAdvection() {
         for (int j=0; j < ycells; j++) {
             for (int k=0; k < zcells+1; k++) {
                 zvelocityNew[i][j][k] = 0.0f;
-                zvelocityNew[i][j][k] += computePressureToAdd(i,j,k,Z_AXIS);
+                zvelocityNew[i][j][k] += KPRES*computePressureToAdd(i,j,k,Z_AXIS);
             }
         }
     }
@@ -409,20 +433,32 @@ float Grid::computePressureToAdd(int i, int j, int k, int AXIS) {
     
     switch (AXIS) {
         case X_AXIS:
-            if (i-1 < 0 || i >= xcells) {
+            if (i-1 < 0) {
                 return 0.0f;
+                //return -timeStep*1.0f/DENSITY*(pressures[i][j][k])/h;
+            } else if (i >= xcells) {
+                return 0.0f;
+                //return -timeStep*1.0f/DENSITY*(-pressures[i-1][j][k])/h;
             } else {
                 return -timeStep*1.0f/DENSITY*(pressures[i][j][k]-pressures[i-1][j][k])/h;
             }
         case Y_AXIS:
-            if (j-1 < 0 || j >= ycells) {
+            if (j-1 < 0) {
                 return 0.0f;
+                //return -timeStep*1.0f/DENSITY*(pressures[i][j][k])/h;
+            } else if (j >= ycells) {
+                return 0.0f;
+                //return -timeStep*1.0f/DENSITY*(-pressures[i][j-1][k])/h;
             } else {
                 return -timeStep*1.0f/DENSITY*(pressures[i][j][k]-pressures[i][j-1][k])/h;
             }
         case Z_AXIS:
-            if (k-1 < 0 || k >= zcells) {
+            if (k-1 < 0) {
                 return 0.0f;
+                //return -timeStep*1.0f/DENSITY*(pressures[i][j][k])/h;
+            } else if (k >= zcells) {
+                return 0.0f;
+                //return -timeStep*1.0f/DENSITY*(-pressures[i][j][k-1])/h;
             } else {
                 return -timeStep*1.0f/DENSITY*(pressures[i][j][k]-pressures[i][j][k-1])/h;
             }
@@ -504,4 +540,88 @@ void Grid::updateParticleVels() {
     for (int i = 0; i < (*particles).size(); i++) {
         (*particles)[i].vel += getInterpolatedVelocityDifference((*particles)[i].pos);
     }
+}
+
+// set layers to 0 for fluid cells, -1 for air cells and solid cells
+void Grid::updateLayers() {
+    for (int i = 0; i < xcells; i++) {
+        for (int j = 0; j < ycells; j++) {
+            for (int k = 0; k < zcells; k++) {
+                if (gridComponents[i][j][k] == FLUID)
+                    layers[i][j][k] = 0;
+                else {
+                    layers[i][j][k] = -1;
+                }
+            }
+        }
+    }
+}
+
+float Grid::avgNeighbLayers(vector<vec3> neighbs, int i, int AXIS) {
+    float avg = 0.0f;
+    int tot = 0;
+    for (int n = 0; n < neighbs.size(); n++) {
+        if (layers[(int)neighbs[n].x][(int)neighbs[n].y][(int)neighbs[n].z] == i-1) {
+            switch (AXIS) {
+                case X_AXIS:
+                    avg += xvelocityNew[(int)neighbs[n].x][(int)neighbs[n].y][(int)neighbs[n].z];
+                    tot++;
+                    break;
+                case Y_AXIS:
+                    avg += yvelocityNew[(int)neighbs[n].x][(int)neighbs[n].y][(int)neighbs[n].z];
+                    tot++;
+                    break;
+                case Z_AXIS:
+                    avg += zvelocityNew[(int)neighbs[n].x][(int)neighbs[n].y][(int)neighbs[n].z];
+                    tot++;
+                    break;
+            }
+        }
+    }
+    if (tot > 0) {
+        avg = avg / tot;
+    }
+    return avg;
+}
+
+//check if neighbs contains a cell such that n.layer == l-1
+bool Grid::hasl1Neighbor(vector<vec3> neighbs, int l) {
+    for (int n = 0; n < neighbs.size(); n++) {
+        if (layers[(int)neighbs[n].x][(int)neighbs[n].y][(int)neighbs[n].z] == l-1) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// propogate known fluid velocities into air cells surrounding the fluid
+// define a buffer zone of at least 2 cells
+void Grid::extrapolateVelocities() {
+    updateLayers();
+    for (int l = 1; l <= std::max(2, KCFL); l++) {
+        for (int i = 0; i < xcells; i++) {
+            for (int j = 0; j < ycells; j++) {
+                for (int k = 0; k < zcells; k++) {
+                    if (layers[i][j][k] == -1) {
+                        vector<vec3> neighbs = getvec3Neighbors(vec3((float)i,(float)j,(float)k));
+                            if (hasl1Neighbor(neighbs, l)) {
+                                // x
+                                if (i-1 >= 0 && gridComponents[i-1][j][k] != FLUID) {
+                                    xvelocityNew[i][j][k] = avgNeighbLayers(neighbs, l, X_AXIS);
+                                }
+                                // y
+                                if (j-1 >= 0 && gridComponents[i][j-1][k] != FLUID) {
+                                    yvelocityNew[i][j][k] = avgNeighbLayers(neighbs, l, Y_AXIS);
+                                }
+                                // z
+                                if (k-1 >= 0 && gridComponents[i][j][k-1] != FLUID) {
+                                    zvelocityNew[i][j][k] = avgNeighbLayers(neighbs, l, Z_AXIS);
+                                }
+                                layers[i][j][k] = l;
+                            }
+                        }
+                    }
+                }
+            }
+        }
 }
