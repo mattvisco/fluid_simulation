@@ -37,7 +37,7 @@
 #define Y_AXIS 1
 #define Z_AXIS 2
 #define GRAVITY -9.81f // meters/second^2
-#define DENSITY 1.0f
+#define DENSITY 1000.0f
 
 #define KCFL 1 // constant for CFL condition for timestep
 #define DAMPENING 0.5f
@@ -76,6 +76,7 @@ public:
     vector<vector<vector<float> > > yvelocityNew;
     vector<vector<vector<float> > > zvelocityNew;
     vector<vector<vector<float> > > gridComponents;
+    vector<vector<vector<int> > > layers;
     vector<vector<vector<vector<Particle> > > > particleCopies;
     void computePressure();
     void setParticles(vector<Particle>*);
@@ -103,6 +104,11 @@ public:
     int getNonSolidNeighbors(vec3);
     bool isNeighbor(vec3,vec3);
     vector<vec3> getFluids();
+    void updateLayers();
+    void extrapolateVelocities();
+    float avgNeighbLayers(vector<vec3>, int, int);
+    bool hasl1Neighbor(vector<vec3>, int);
+    vector<vec3> getvec3Neighbors(vec3);
 };
 
 #endif 

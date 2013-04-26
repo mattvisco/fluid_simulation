@@ -22,6 +22,7 @@ void Simulator::simulate() {
     grid.storeOldVelocities(); // stores the weighted averages of particles at grid points
     grid.computeTimeStep();
     grid.computeNonAdvection();
+    grid.extrapolateVelocities();
     grid.updateParticleVels();
     moveParticles();
 }

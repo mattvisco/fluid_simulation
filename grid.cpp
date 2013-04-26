@@ -33,14 +33,18 @@ Grid::Grid(float xdim, float ydim, float zdim, float h) {
     
     // sets up two 3d vectors that stores respectively
     // copies of particles and what component is in grid
+    // also initializes layers vector for velocity extrapolation
     particleCopies.resize(xcells);
     gridComponents.resize(xcells);
+    layers.resize(xcells);
     for (int i = 0; i < xcells; i++) {
         particleCopies[i].resize(ycells);
         gridComponents[i].resize(ycells);
+        layers[i].resize(ycells);
         for (int j = 0; j < ycells; j++) {
             particleCopies[i][j].resize(zcells);
             gridComponents[i][j].resize(zcells);
+            layers[i][j].resize(zcells);
         }
     }
 }
@@ -177,6 +181,26 @@ int Grid::getAirNeighbors(vec3 p) {
     return airs;
 }
 
+vector<vec3> Grid::getvec3Neighbors(vec3 p) {
+    int i = (int)p.x;
+    int j = (int)p.y;
+    int k = (int)p.z;
+    vector<vec3> flds;
+    if (i+1 < xcells)
+        flds.push_back(vec3((float)i+1,(float)j,(float)k));
+    if (i-1 >= 0)
+        flds.push_back(vec3((float)i-1,(float)j,(float)k));
+    if (j+1 < ycells)
+        flds.push_back(vec3((float)i,(float)j+1,(float)k));
+    if (j-1 >= 0)
+        flds.push_back(vec3((float)i,(float)j-1,(float)k));
+    if (k+1 < zcells)
+        flds.push_back(vec3((float)i,(float)j,(float)k+1));
+    if (k-1 >= 0)
+        flds.push_back(vec3((float)i,(float)j,(float)k-1));
+    return flds;
+}
+
 // get divergence of cell u
 // not sure if forward difference is right
 float Grid::divergence(vec3 u) {
@@ -309,7 +333,7 @@ vector<vector<Particle> > Grid::getCellNeighbors(float x, float y, float z) {
     return cellParticles;
 }
 
-// at each velocity grid point (in center of cell faces), compute and store a weighted average of particle velocites within a **sphere** of radius h
+// at each velocity grid point (in center of cell faces), compute and store a weighted average of particle velocites within a cube of radius h
 void Grid::storeOldVelocities() {
     // x
     for (int i=0; i < xcells+1; i++) {
@@ -518,4 +542,88 @@ void Grid::updateParticleVels() {
     for (int i = 0; i < (*particles).size(); i++) {
         (*particles)[i].vel += getInterpolatedVelocityDifference((*particles)[i].pos);
     }
+}
+
+// set layers to 0 for fluid cells, -1 for air cells and solid cells
+void Grid::updateLayers() {
+    for (int i = 0; i < xcells; i++) {
+        for (int j = 0; j < ycells; j++) {
+            for (int k = 0; k < zcells; k++) {
+                if (gridComponents[i][j][k] == FLUID)
+                    layers[i][j][k] = 0;
+                else {
+                    layers[i][j][k] = -1;
+                }
+            }
+        }
+    }
+}
+
+float Grid::avgNeighbLayers(vector<vec3> neighbs, int i, int AXIS) {
+    float avg = 0.0f;
+    int tot = 0;
+    for (int n = 0; n < neighbs.size(); n++) {
+        if (layers[(int)neighbs[n].x][(int)neighbs[n].y][(int)neighbs[n].z] == i-1) {
+            switch (AXIS) {
+                case X_AXIS:
+                    avg += xvelocityNew[(int)neighbs[n].x][(int)neighbs[n].y][(int)neighbs[n].z];
+                    tot++;
+                    break;
+                case Y_AXIS:
+                    avg += yvelocityNew[(int)neighbs[n].x][(int)neighbs[n].y][(int)neighbs[n].z];
+                    tot++;
+                    break;
+                case Z_AXIS:
+                    avg += zvelocityNew[(int)neighbs[n].x][(int)neighbs[n].y][(int)neighbs[n].z];
+                    tot++;
+                    break;
+            }
+        }
+    }
+    if (tot > 0) {
+        avg = avg / tot;
+    }
+    return avg;
+}
+
+//check if neighbs contains a cell such that n.layer == l-1
+bool Grid::hasl1Neighbor(vector<vec3> neighbs, int l) {
+    for (int n = 0; n < neighbs.size(); n++) {
+        if (layers[(int)neighbs[n].x][(int)neighbs[n].y][(int)neighbs[n].z] == l-1) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// propogate known fluid velocities into air cells surrounding the fluid
+// define a buffer zone of at least 2 cells
+void Grid::extrapolateVelocities() {
+    updateLayers();
+    for (int l = 1; l <= std::max(2, KCFL); l++) {
+        for (int i = 0; i < xcells; i++) {
+            for (int j = 0; j < ycells; j++) {
+                for (int k = 0; k < zcells; k++) {
+                    if (layers[i][j][k] == -1) {
+                        vector<vec3> neighbs = getvec3Neighbors(vec3((float)i,(float)j,(float)k));
+                            if (hasl1Neighbor(neighbs, l)) {
+                                // x
+                                if (i-1 >= 0 && gridComponents[i-1][j][k] != FLUID) {
+                                    xvelocityNew[i][j][k] = avgNeighbLayers(neighbs, l, X_AXIS);
+                                }
+                                // y
+                                if (j-1 >= 0 && gridComponents[i][j-1][k] != FLUID) {
+                                    yvelocityNew[i][j][k] = avgNeighbLayers(neighbs, l, Y_AXIS);
+                                }
+                                // z
+                                if (k-1 >= 0 && gridComponents[i][j][k-1] != FLUID) {
+                                    zvelocityNew[i][j][k] = avgNeighbLayers(neighbs, l, Z_AXIS);
+                                }
+                                layers[i][j][k] = l;
+                            }
+                        }
+                    }
+                }
+            }
+        }
 }
