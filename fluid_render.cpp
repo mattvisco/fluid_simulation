@@ -98,7 +98,6 @@ void myDisplay(void) {
     
     // Render all particles
     glBegin(GL_POINTS);
-    #pragma omp parallel for
     for (int i = 0; i < particles.size(); i++) {
         glColor3f(0,0,1);
         glVertex3f(particles[i].pos.x, particles[i].pos.y, particles[i].pos.z);
