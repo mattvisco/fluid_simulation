@@ -9,10 +9,6 @@
 
 #include "grid.h"
 
-
-
-
-
 Grid::Grid(float xdim, float ydim, float zdim, float h) {
     Grid::xdim = xdim;
     Grid::ydim = ydim;
@@ -98,325 +94,172 @@ vec3 Grid::getCell(Particle& particle) {
 }
 
 // clear the particleCopies and gridComponents grid
+// default is AIR
 void Grid::clearParticleCopies() {
     for (int i = 0; i < xcells; i++) {
         for (int j = 0; j < ycells; j++) {
             for (int k = 0; k < zcells; k++) {
                 particleCopies[i][j][k].clear();
-                gridComponents[i][j][k] = NONE;
+                gridComponents[i][j][k] = AIR;
             }
         }
     }
 }
 
-// Puts all the indices of the fluid cells in a vector
-vector<vec3> Grid::fluidCellIndex() {
-    fluidCells.clear();
-    for (int i=0;i<xcells;i++){
-        for (int j=0; j<ycells; j++){
-            for (int k=0; k<zcells; k++){
-                if (gridComponents[i][j][k] != AIR) { // dono if this should include solid also
-                    fluidCells.push_back(vec3(i,j,k));
-                }
+// get a vector of coordinates of fluid cells
+vector<vec3> Grid::getFluids() {
+    vector<vec3> fluids;
+    for (int i = 0; i < xcells; i++) {
+        for (int j = 0; j < ycells; j++) {
+            for (int k = 0; k < zcells; k++) {
+                if (gridComponents[i][j][k] == FLUID)
+                    fluids.push_back(vec3((float)i,(float)j,(float)k));
             }
         }
     }
-    return fluidCells;
+    return fluids;
 }
 
-// Finds which cell corresponds to i,j,k
-int Grid::findFluidCell(int i, int j, int k) {
-    for (int s = 0; s < fluidCells.size(); i++) {
-        if (fluidCells[s].x == i && fluidCells[s].y == j && fluidCells[s].z == k) {
-            return s;
-        }
-    }
+bool Grid::isNeighbor(vec3 p1, vec3 p2) {
+    int i1 = (int)p1.x;
+    int j1 = (int)p1.y;
+    int k1 = (int)p1.z;
+    int i2 = (int)p2.x;
+    int j2 = (int)p2.y;
+    int k2 = (int)p2.z;
+    
+    bool left = (i1 == i2-1) && (j1 == j2) && (k1 == k2);
+    bool right = (i1 == i2+1) && (j1 == j2) && (k1 == k2);
+    bool top = (i1 == i2) && (j1 == j2-1) && (k1 == k2);
+    bool bottom = (i1 == i2) && (j1 == j2+1) && (k1 == k2);
+    bool front = (i1 == i2) && (j1 == j2) && (k1 == k2-1);
+    bool back = (i1 == i2) && (j1 == j2) && (k1 == k2+1);
+    return left || right || top || bottom || back || front;
 }
 
-void Grid::computePressure() {
-    fluidCellIndex();
-    int size = fluidCells.size();
+int Grid::getNonSolidNeighbors(vec3 p) {
+    int i = (int)p.x;
+    int j = (int)p.y;
+    int k = (int)p.z;
+    int nonSolids = 0;
+    if (i+1 < xcells && gridComponents[i+1][j][k] != SOLID)
+        nonSolids++;
+    if (i-1 >= 0 && gridComponents[i-1][j][k] != SOLID)
+        nonSolids++;
+    if (j+1 < ycells && gridComponents[i][j+1][k] != SOLID)
+        nonSolids++;
+    if (j-1 >= 0 && gridComponents[i][j-1][k] != SOLID)
+        nonSolids++;
+    if (k+1 < zcells && gridComponents[i][j][k+1] != SOLID)
+        nonSolids++;
+    if (k-1 >= 0 && gridComponents[i][j][k-1] != SOLID)
+        nonSolids++;
+    return nonSolids;
+}
+
+int Grid::getAirNeighbors(vec3 p) {
+    int i = (int)p.x;
+    int j = (int)p.y;
+    int k = (int)p.z;
+    int airs = 0;
+    if (i+1 < xcells && gridComponents[i+1][j][k] == AIR)
+        airs++;
+    if (i-1 >= 0 && gridComponents[i-1][j][k] == AIR)
+        airs++;
+    if (j+1 < ycells && gridComponents[i][j+1][k] == AIR)
+        airs++;
+    if (j-1 >= 0 && gridComponents[i][j-1][k] == AIR)
+        airs++;
+    if (k+1 < zcells && gridComponents[i][j][k+1] == AIR)
+        airs++;
+    if (k-1 >= 0 && gridComponents[i][j][k-1] == AIR)
+        airs++;
+    return airs;
+}
+
+// get divergence of cell u
+// not sure if forward difference is right
+float Grid::divergence(vec3 u) {
+    int i = (int)u.x;
+    int j = (int)u.y;
+    int k = (int)u.z;
+    return xvelocityOld[i+1][j][k]-xvelocityOld[i][j][k] + yvelocityOld[i][j+1][k]-yvelocityOld[i][j][k] + zvelocityOld[i][j][k+1]-zvelocityOld[i][j][k];
+}
+
+void Grid::computePressure(){
+    vector<vec3> fluids = getFluids();
+    int size=fluids.size();
     double x[size];
     double b[size];
+    double a[size][size];
     
-    vector<float> val;
-    vector<float> tempval;
-    vector<int> ival;
-    vector<int> tempival;
-    vector<int> rval;
-    int colCounter=0;
-    rval.push_back(colCounter);
-    
-    for (int s = 0; s < size; s++) {
-        int n=0;
-        int ns=6;
-        int cell;
-        bool fx, fy, fz;
-        vec3 indices = fluidCells[s];
-        int i = indices.x, j = indices.y, k = indices.z;
-        
-        if (i > 0) {
-            if (gridComponents[i-1][j][k] == FLUID){
-                val.push_back(1);
-                cell = findFluidCell(i-1,j,k);
-                cout << cell << "\n";
-                ival.push_back(s*size + cell);
-                n++;
-            }
-        }
-        
-        if (j > 0) {
-            if (gridComponents[i][j-1][k]==FLUID){
-                val.push_back(1);
-                cell = findFluidCell(i,j-1,k);
-                cout << cell << "\n";
-                ival.push_back(s*size + cell);
-                n++;
-            }
-        }
-       
-        if (k > 0) {
-            if (gridComponents[i][j][k-1]==FLUID){
-                val.push_back(1);
-                cell = findFluidCell(i,j,k-1);
-                cout << cell << "\n";
-                ival.push_back(s*size + cell);
-                n++;
-            }
-        }
-
-        if (k<zcells-1){
-            if (gridComponents[i][j][k+1]==FLUID){
-                tempval.push_back(1);
-                cell = findFluidCell(i,j,k+1);
-                cout << cell << "\n";
-                tempival.push_back(s*size + cell);
-                n++;
-            }
-        }
-        
-        if (j<ycells-1){
-            if (gridComponents[i][j+1][k]==FLUID){
-                tempval.push_back(1);
-                cell = findFluidCell(i,j+1,k);
-                cout << cell << "\n";
-                tempival.push_back(s*size + cell);
-                n++;
-            }
-            
-        }
-        
-        if (i<xcells-1){
-            if (gridComponents[i+1][j][k]==FLUID){
-                tempval.push_back(1);
-                cell = findFluidCell(i+1,j,k);
-                cout << cell << "\n";
-                tempival.push_back(s*size + cell);
-                n++;
-            }
-        }
-        
-        if (i==0){
-            ns--;
-            if (j==0){
-                ns--;
-                if (k==0){
-                    ns--;
-                } else if (k==zcells-1){
-                    ns--;
-                }
-            } else if (j==ycells-1){
-                ns--;
-            }
-        } else if (i==xcells-1){
-            ns--;
-        }
-        val.push_back(-1*ns);
-        cell = findFluidCell(i,j,k);
-        cout << cell << "\n";
-        ival.push_back(s*size + cell);
-        n++;
-        
-        for (int r =0;r<tempval.size();r++){
-            val.push_back(tempval[r]);
-            ival.push_back(tempival[r]);
-        }
-        tempval.clear();
-        tempival.clear();
-        colCounter+=n;
-        rval.push_back(colCounter);
-        b[cell] = DENSITY*h*(xvelocityOld[i+1][j][k]-xvelocityOld[i][j][k]
-                                                   +yvelocityOld[i][j+1][k]-yvelocityOld[i][j][k]
-                                                   +zvelocityOld[i][j][k+1]-zvelocityOld[i][j][k])/timeStep - (ns-n)*PATM;
+    // zero out x
+    for (int i = 0; i < size; i++) {
+        x[i] = 0.0;
     }
-//
-//    int c=val.size();
-//    double value[c];
-//    int ivalue[c];
-//    int pvalue[rval.size()];
-//    for (int g=0;g<ival.size();g++){
-//        ivalue[g]=ival[g];
-//        value[g]=1;
-//    }
-//    for (int m=0;m<rval.size();m++){
-//        pvalue[m]=rval[m];
-//    }
-//    
-//    int status;
-//    double *null = (double *) NULL ;
-//    int i,j,k;
-//    void *Symbolic, *Numeric ;
-//    status = umfpack_di_symbolic (size, size, pvalue, ivalue, value, &Symbolic, null, null) ;
-//    cout << "status1" << status << "\n";
-//    status = umfpack_di_numeric (pvalue, ivalue, value, Symbolic, &Numeric, null, null);
-//    cout << "status2" << status << "\n";
-//    umfpack_di_free_symbolic (&Symbolic) ;
-//    status = umfpack_di_solve (UMFPACK_At, pvalue, ivalue, value, x, b, Numeric, null, null) ;
-//    cout << "status3" << status << "\n";
-//    umfpack_di_free_numeric (&Numeric);
-//    
-//    for (i = 0; i < sizeof(x); i++) {
-//        vec3 indices = fluidCells[i];
-//        pressures[indices.x][indices.y][indices.z] = x[i];
-//    }
+    
+    // for each row in a, store negative how many neighbors are fluid and 1s in columns of neighbors
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
+            if (isNeighbor(fluids[i], fluids[j])) {
+                a[i][j] = 1.0;
+            } else {
+                a[i][j] = 0.0;
+            }
+        }
+        a[i][i] = -1.0*getNonSolidNeighbors(fluids[i]);
+    }
+    
+    // for each entry in b
+    for (int i = 0; i < size; i++) {
+        b[i] = (DENSITY*h/timeStep)*divergence(fluids[i]) - getAirNeighbors(fluids[i])*PATM;
+    }
+    
+    // set up arrays for sparse matrix solve
+    //pvalue - total nonzero column entries so far - initial 0
+    //ivalue - row number of values in value
+    vector<int> pvaluevect;
+    int count = 0;
+    pvaluevect.push_back(count);
+    vector<double> valuevect;
+    vector<int> ivaluevect;
+    // go by columns
+    for (int j = 0; j < size; j++) {
+        int numInCol = 0;
+        for (int i = 0; i < size; i++) {
+            if (a[i][j] != 0) {
+                numInCol++;
+                valuevect.push_back(a[i][j]);
+                ivaluevect.push_back(i);
+            }
+        }
+        count += numInCol;
+        pvaluevect.push_back(count);
+    }
+    
+    // store these in arrays
+    int* pvalue = &pvaluevect[0];
+    int* ivalue = &ivaluevect[0];
+    double* value = &valuevect[0];
+    
+    int status;
+    double *null = (double *) NULL ;
+    void *Symbolic, *Numeric ;
+    status = umfpack_di_symbolic (size, size, pvalue, ivalue, value, &Symbolic, null, null) ;
+    status = umfpack_di_numeric (pvalue, ivalue, value, Symbolic, &Numeric, null, null);
+    umfpack_di_free_symbolic (&Symbolic) ;
+    status = umfpack_di_solve (UMFPACK_A, pvalue, ivalue, value, x, b, Numeric, null, null) ;
+    umfpack_di_free_numeric (&Numeric) ;
+    
+    // store new pressure values
+    setupVector(pressures, xcells, ycells, zcells);
+    for (int s = 0; s < size; s++) {
+        int i = (int)fluids[s].x;
+        int j = (int)fluids[s].y;
+        int k = (int)fluids[s].z;
+        pressures[i][j][k] = x[s];
+    }
 }
-
-//void Grid::computePressure(){
-//    fluidCellIndex();
-//    int size = fluidCells.size();
-//    double x[size];
-//    double b[size];
-//    
-//    vector<float> val;
-//    vector<float> tempval;
-//    vector<int> ival;
-//    vector<int> tempival;
-//    vector<int> rval;
-//    int colCounter=0;
-//    rval.push_back(colCounter);
-//    
-//    for (int i=0;i<xcells;i++){
-//        for (int j=0; j<ycells; j++){
-//            for (int k=0; k<zcells; k++){
-//                if (gridComponents[i][j][k] != AIR) {
-//                    int n=0;
-//                    int ns=6;
-//                    bool fx, fy, fz;
-//                    if (i>0){
-//                        if (gridComponents[i-1][j][k]==FLUID){
-//                            //printf("#1\n");
-//                            val.push_back(1);
-//                            ival.push_back(k+zcells*j+zcells*ycells*(i-1));
-//                            n++;
-//                        }
-//                    }
-//                    if (j>0){
-//                        if (gridComponents[i][j-1][k]==FLUID){
-//                            val.push_back(1);
-//                            ival.push_back(k+zcells*(j-1)+zcells*ycells*i);
-//                            n++;
-//                        }
-//                        
-//                    }
-//                    if (k>0) {
-//                        if (gridComponents[i][j][k-1]==FLUID){
-//                            val.push_back(1);
-//                            ival.push_back(k-1+zcells*j+zcells*ycells*i);
-//                            n++;
-//                        }
-//                        
-//                    }
-//                    if (k<zcells-1){
-//                        if (gridComponents[i][j][k+1]==FLUID){
-//                            tempval.push_back(1);
-//                            tempival.push_back(k+1+zcells*j+zcells*ycells*i);
-//                            n++;
-//                        }
-//                    }
-//                    if (j<ycells-1){
-//                        if (gridComponents[i][j+1][k]==FLUID){
-//                            tempval.push_back(1);
-//                            tempival.push_back(k+zcells*(j+1)+zcells*ycells*i);
-//                            n++;
-//                        }
-//                        
-//                    } if (i<xcells-1){
-//                        if (gridComponents[i+1][j][k]==FLUID){
-//                            tempval.push_back(1);
-//                            tempival.push_back(k+zcells*j+zcells*ycells*(i+1));
-//                            n++;
-//                        }
-//                    }
-//                    if (i==0){
-//                        ns--;
-//                        if (j==0){
-//                            ns--;
-//                            if (k==0){
-//                                ns--;
-//                            } else if (k==zcells-1){
-//                                ns--;
-//                            }
-//                        } else if (j==ycells-1){
-//                            ns--;
-//                        }
-//                    } else if (i==xcells-1){
-//                        ns--;
-//                    }
-//                    if (gridComponents[i][j][k]==FLUID){
-//                        val.push_back(-1*ns);
-//                        ival.push_back(k+zcells*j+zcells*ycells*i);
-//                        n++;
-//                    }
-//                    for (int r =0;r<tempval.size();r++){
-//                        val.push_back(tempval[r]);
-//                        ival.push_back(tempival[r]);
-//                    }
-//                    tempval.clear();
-//                    tempival.clear();
-//                    colCounter+=n;
-//                    rval.push_back(colCounter);
-//                    b[k+zcells*j+zcells*ycells*i] = DENSITY*h*(xvelocityOld[i+1][j][k]-xvelocityOld[i][j][k]
-//                                                               +yvelocityOld[i][j+1][k]-yvelocityOld[i][j][k]
-//                                                               +zvelocityOld[i][j][k+1]-zvelocityOld[i][j][k])/timeStep - (ns-n)*PATM;
-//                }
-//            }
-//        }
-//    }
-//    int c=val.size();
-//    double value[c];
-//    int ivalue[c];
-//    int pvalue[rval.size()];
-//    for (int g=0;g<ival.size();g++){
-//        ivalue[g]=ival[g];
-//        value[g]=1;
-//    }
-//    for (int m=0;m<rval.size();m++){
-//        pvalue[m]=rval[m];
-//    }
-//    
-//    int status;
-//    double *null = (double *) NULL ;
-//    int i,j,k;
-//    void *Symbolic, *Numeric ;
-//    status = umfpack_di_symbolic (size, size, pvalue, ivalue, value, &Symbolic, null, null) ;
-//    status = umfpack_di_numeric (pvalue, ivalue, value, Symbolic, &Numeric, null, null);
-//    umfpack_di_free_symbolic (&Symbolic) ;
-//    status = umfpack_di_solve (UMFPACK_At, pvalue, ivalue, value, x, b, Numeric, null, null) ;
-//    umfpack_di_free_numeric (&Numeric) ;
-//    for (i = 0; i<xcells; i++){
-//        for (j = 0; j<ycells; j++){
-//            for (k = 0; k<zcells; k++){
-//                if (isfinite(x[k+j*zcells+i*ycells*zcells])){
-//                    pressures[i][j][k]=x[k+j*zcells+i*ycells*zcells];
-//                } else {
-//                    pressures[i][j][k]=0.0;
-//                }
-//            }
-//        }
-//    }
-//    for (i=0;i<size;i++) {printf("x[%i]= %f\n",i,x[i]);}
-//    
-//}
 
 
 // get all particles within a radius of a point x,y,z
@@ -434,8 +277,6 @@ vector<Particle> Grid::getNeighbors(float x, float y, float z, float radius) {
     }
     return neighbors;
 }
-
-
 
 float Grid::distance(vec3 p1, vec3 p2) {
     return length(p1 - p2);
@@ -534,9 +375,7 @@ void Grid::computeNonAdvection() {
         for (int j=0; j < ycells; j++) {
             for (int k=0; k < zcells; k++) {
                 xvelocityNew[i][j][k] = 0.0f;
-                //cout << "xvel old" << xvelocityNew[i][j][k] << "\n";
                 xvelocityNew[i][j][k] += computePressureToAdd(i,j,k,X_AXIS);
-                //cout << "xvel new" << xvelocityNew[i][j][k] << "\n";
             }
         }
     }
@@ -573,8 +412,6 @@ float Grid::computePressureToAdd(int i, int j, int k, int AXIS) {
             if (i-1 < 0 || i >= xcells) {
                 return 0.0f;
             } else {
-//                cout << "X PRESSURE TO BE ADDED" << "\n";
-//                cout << "pressures[i][j][k]-pressures[i-1][j][k]) -->" << pressures[i][j][k] << " - " << pressures[i-1][j][k] << "\n";
                 return -timeStep*1.0f/DENSITY*(pressures[i][j][k]-pressures[i-1][j][k])/h;
             }
         case Y_AXIS:

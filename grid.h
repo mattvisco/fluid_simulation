@@ -37,14 +37,15 @@
 #define Y_AXIS 1
 #define Z_AXIS 2
 #define GRAVITY -9.81f // meters/second^2
-#define DENSITY 1000.0f
+#define DENSITY 1.0f
+
 #define KCFL 1 // constant for CFL condition for timestep
 #define DAMPENING 0.0f
 #define NONE -1
 #define AIR 0
 #define FLUID 1
 #define SOLID 2
-#define PATM 3
+#define PATM 1
 
 
 
@@ -65,9 +66,6 @@ public:
     int zcells;
     float timeStep; // in milliseconds ?
     float maxVelocity;
-    vector<vec3> fluidCells;
-    vector<vec3> fluidCellIndex();
-    int findFluidCell(int, int, int);
     vector<Particle>* particles;
     vector<vector<vector<float> > > pressures; 
     vector<vector<vector<float> > > xvelocityOld; 
@@ -99,6 +97,11 @@ public:
     vec3 getInterpolatedVelocity(vec3);
     float getInterpolatedValue(float,float,float,vector<vector<vector<float> > >);
     void updateParticleVels();
+    float divergence(vec3);
+    int getAirNeighbors(vec3);
+    int getNonSolidNeighbors(vec3);
+    bool isNeighbor(vec3,vec3);
+    vector<vec3> getFluids();
 };
 
 #endif 

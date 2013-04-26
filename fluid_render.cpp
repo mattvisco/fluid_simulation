@@ -98,6 +98,7 @@ void myDisplay(void) {
     
     // Render all particles
     glBegin(GL_POINTS);
+    #pragma omp parallel for
     for (int i = 0; i < particles.size(); i++) {
         glColor3f(0,0,1);
         glVertex3f(particles[i].pos.x, particles[i].pos.y, particles[i].pos.z);
@@ -189,8 +190,8 @@ int main(int argc, char *argv[]) {
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     
     // Initalize theviewport size
-    viewport.w = 400;
-    viewport.h = 400;
+    viewport.w = 1000;
+    viewport.h = 1000;
     
     //The size and position of the window
     glutInitWindowSize(viewport.w, viewport.h);
