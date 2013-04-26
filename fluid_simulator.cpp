@@ -31,8 +31,11 @@ void Simulator::moveParticles() {
     for (int i = 0; i < (*particles).size(); i++) {
        //(*particles)[i].pos += grid.timeStep*(grid.getInterpolatedVelocity((*particles)[i].pos + grid.timeStep/2*(grid.getInterpolatedVelocity((*particles)[i].pos)+grid.getInterpolatedVelocityDifference((*particles)[i].pos)))+grid.getInterpolatedVelocityDifference((*particles)[i].pos + grid.timeStep/2*(grid.getInterpolatedVelocity((*particles)[i].pos)+grid.getInterpolatedVelocityDifference((*particles)[i].pos))));
         
+        //the kind of sketchy way?
+        (*particles)[i].pos += grid.timeStep*((*particles)[i].vel + grid.getInterpolatedVelocityDifference((*particles)[i].pos + (grid.timeStep/2*(*particles)[i].vel)));
+        
         //the sketchy way
-        (*particles)[i].pos += grid.timeStep*(*particles)[i].vel;
+        //(*particles)[i].pos += grid.timeStep*(*particles)[i].vel;
         
         // check for boundary collisions
         // move the particles in the normal direction outside the solid
