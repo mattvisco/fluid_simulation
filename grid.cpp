@@ -109,11 +109,36 @@ void Grid::clearParticleCopies() {
     }
 }
 
+// Puts all the indices of the fluid cells in a vector
+vector<vec3> Grid::fluidCellIndex() {
+    fluidCells.clear();
+    for (int i=0;i<xcells;i++){
+        for (int j=0; j<ycells; j++){
+            for (int k=0; k<zcells; k++){
+                if (gridComponents[i][j][k] != AIR) { // dono if this should include solid also
+                    fluidCells.push_back(vec3(i,j,k));
+                }
+            }
+        }
+    }
+    return fluidCells;
+}
 
-void Grid::computePressure(){
-    int size=xcells*ycells*zcells;
+// Finds which cell corresponds to i,j,k
+int Grid::findFluidCell(int i, int j, int k) {
+    for (int s = 0; s < fluidCells.size(); i++) {
+        if (fluidCells[s].x == i && fluidCells[s].y == j && fluidCells[s].z == k) {
+            return s;
+        }
+    }
+}
+
+void Grid::computePressure() {
+    fluidCellIndex();
+    int size = fluidCells.size();
     double x[size];
     double b[size];
+    
     vector<float> val;
     vector<float> tempval;
     vector<int> ival;
@@ -121,128 +146,277 @@ void Grid::computePressure(){
     vector<int> rval;
     int colCounter=0;
     rval.push_back(colCounter);
-    for (int i=0;i<xcells;i++){
-        for (int j=0; j<ycells; j++){
-            for (int k=0; k<zcells; k++){
-                if (gridComponents[i][j][k]!=AIR) {
-                int n=0;
-                int ns=6;
-                bool fx, fy, fz;
-                if (i>0){
-                    if (gridComponents[i-1][j][k]==FLUID){
-                        //printf("#1\n");
-                        val.push_back(1);
-                        ival.push_back(k+zcells*j+zcells*ycells*(i-1));
-                        n++;
-                    }
-                }
-                if (j>0){
-                    if (gridComponents[i][j-1][k]==FLUID){
-                        val.push_back(1);
-                        ival.push_back(k+zcells*(j-1)+zcells*ycells*i);
-                        n++;
-                    }
-                    
-                }
-                if (k>0) {
-                    if (gridComponents[i][j][k-1]==FLUID){
-                        val.push_back(1);
-                        ival.push_back(k-1+zcells*j+zcells*ycells*i);
-                        n++;
-                    }
-                    
-                }
-                if (k<zcells-1){
-                    if (gridComponents[i][j][k+1]==FLUID){
-                        tempval.push_back(1);
-                        tempival.push_back(k+1+zcells*j+zcells*ycells*i);
-                        n++;
-                    }
-                }
-                if (j<ycells-1){
-                    if (gridComponents[i][j+1][k]==FLUID){
-                        tempval.push_back(1);
-                        tempival.push_back(k+zcells*(j+1)+zcells*ycells*i);
-                        n++;
-                    }
-                    
-                } if (i<xcells-1){
-                    if (gridComponents[i+1][j][k]==FLUID){
-                        tempval.push_back(1);
-                        tempival.push_back(k+zcells*j+zcells*ycells*(i+1));
-                        n++;
-                    }
-                }
-                if (i==0){
-                    ns--;
-                    if (j==0){
-                        ns--;
-                        if (k==0){
-                            ns--;
-                        } else if (k==zcells-1){
-                            ns--;
-                        }
-                    } else if (j==ycells-1){
-                        ns--;
-                    }
-                } else if (i==xcells-1){
-                    ns--;
-                }
-                if (gridComponents[i][j][k]==FLUID){
-                    val.push_back(-1*ns);
-                    ival.push_back(k+zcells*j+zcells*ycells*i);
-                    n++;
-                }
-                for (int r =0;r<tempval.size();r++){
-                    val.push_back(tempval[r]);
-                    ival.push_back(tempival[r]);
-                }
-                tempval.clear();
-                tempival.clear();
-                colCounter+=n;
-                rval.push_back(colCounter);
-                b[k+zcells*j+zcells*ycells*i] = DENSITY*h*(xvelocityOld[i+1][j][k]-xvelocityOld[i][j][k]
-                                                     +yvelocityOld[i][j+1][k]-yvelocityOld[i][j][k]
-                                                     +zvelocityOld[i][j][k+1]-zvelocityOld[i][j][k])/timeStep - (ns-n)*PATM;
-                }
+    
+    for (int s = 0; s < size; s++) {
+        int n=0;
+        int ns=6;
+        int cell;
+        bool fx, fy, fz;
+        vec3 indices = fluidCells[s];
+        int i = indices.x, j = indices.y, k = indices.z;
+        
+        if (i > 0) {
+            if (gridComponents[i-1][j][k] == FLUID){
+                val.push_back(1);
+                cell = findFluidCell(i-1,j,k);
+                cout << cell << "\n";
+                ival.push_back(s*size + cell);
+                n++;
             }
         }
-    }
-    int c=val.size();
-    double value[c];
-    int ivalue[c];
-    int pvalue[rval.size()];
-    for (int g=0;g<ival.size();g++){
-        ivalue[g]=ival[g];
-        value[g]=1;
-    }
-    for (int m=0;m<rval.size();m++){
-        pvalue[m]=rval[m];
-    }
-    
-    int status;
-    double *null = (double *) NULL ;
-    int i,j,k;
-    void *Symbolic, *Numeric ;
-    status = umfpack_di_symbolic (size, size, pvalue, ivalue, value, &Symbolic, null, null) ;
-    status = umfpack_di_numeric (pvalue, ivalue, value, Symbolic, &Numeric, null, null);
-    umfpack_di_free_symbolic (&Symbolic) ;
-    status = umfpack_di_solve (UMFPACK_At, pvalue, ivalue, value, x, b, Numeric, null, null) ;
-    umfpack_di_free_numeric (&Numeric) ;
-    for (i = 0; i<xcells; i++){
-        for (j = 0; j<ycells; j++){
-            for (k = 0; k<zcells; k++){
-                if (isfinite(x[k+j*zcells+i*ycells*zcells])){
-                    pressures[i][j][k]=x[k+j*zcells+i*ycells*zcells];
-                } else {
-                    pressures[i][j][k]=0.0;
-                }
+        
+        if (j > 0) {
+            if (gridComponents[i][j-1][k]==FLUID){
+                val.push_back(1);
+                cell = findFluidCell(i,j-1,k);
+                cout << cell << "\n";
+                ival.push_back(s*size + cell);
+                n++;
             }
         }
+       
+        if (k > 0) {
+            if (gridComponents[i][j][k-1]==FLUID){
+                val.push_back(1);
+                cell = findFluidCell(i,j,k-1);
+                cout << cell << "\n";
+                ival.push_back(s*size + cell);
+                n++;
+            }
+        }
+
+        if (k<zcells-1){
+            if (gridComponents[i][j][k+1]==FLUID){
+                tempval.push_back(1);
+                cell = findFluidCell(i,j,k+1);
+                cout << cell << "\n";
+                tempival.push_back(s*size + cell);
+                n++;
+            }
+        }
+        
+        if (j<ycells-1){
+            if (gridComponents[i][j+1][k]==FLUID){
+                tempval.push_back(1);
+                cell = findFluidCell(i,j+1,k);
+                cout << cell << "\n";
+                tempival.push_back(s*size + cell);
+                n++;
+            }
+            
+        }
+        
+        if (i<xcells-1){
+            if (gridComponents[i+1][j][k]==FLUID){
+                tempval.push_back(1);
+                cell = findFluidCell(i+1,j,k);
+                cout << cell << "\n";
+                tempival.push_back(s*size + cell);
+                n++;
+            }
+        }
+        
+        if (i==0){
+            ns--;
+            if (j==0){
+                ns--;
+                if (k==0){
+                    ns--;
+                } else if (k==zcells-1){
+                    ns--;
+                }
+            } else if (j==ycells-1){
+                ns--;
+            }
+        } else if (i==xcells-1){
+            ns--;
+        }
+        val.push_back(-1*ns);
+        cell = findFluidCell(i,j,k);
+        cout << cell << "\n";
+        ival.push_back(s*size + cell);
+        n++;
+        
+        for (int r =0;r<tempval.size();r++){
+            val.push_back(tempval[r]);
+            ival.push_back(tempival[r]);
+        }
+        tempval.clear();
+        tempival.clear();
+        colCounter+=n;
+        rval.push_back(colCounter);
+        b[cell] = DENSITY*h*(xvelocityOld[i+1][j][k]-xvelocityOld[i][j][k]
+                                                   +yvelocityOld[i][j+1][k]-yvelocityOld[i][j][k]
+                                                   +zvelocityOld[i][j][k+1]-zvelocityOld[i][j][k])/timeStep - (ns-n)*PATM;
     }
-    for (i=0;i<size;i++) {printf("x[%i]= %f\n",i,x[i]);}
-    
+//
+//    int c=val.size();
+//    double value[c];
+//    int ivalue[c];
+//    int pvalue[rval.size()];
+//    for (int g=0;g<ival.size();g++){
+//        ivalue[g]=ival[g];
+//        value[g]=1;
+//    }
+//    for (int m=0;m<rval.size();m++){
+//        pvalue[m]=rval[m];
+//    }
+//    
+//    int status;
+//    double *null = (double *) NULL ;
+//    int i,j,k;
+//    void *Symbolic, *Numeric ;
+//    status = umfpack_di_symbolic (size, size, pvalue, ivalue, value, &Symbolic, null, null) ;
+//    cout << "status1" << status << "\n";
+//    status = umfpack_di_numeric (pvalue, ivalue, value, Symbolic, &Numeric, null, null);
+//    cout << "status2" << status << "\n";
+//    umfpack_di_free_symbolic (&Symbolic) ;
+//    status = umfpack_di_solve (UMFPACK_At, pvalue, ivalue, value, x, b, Numeric, null, null) ;
+//    cout << "status3" << status << "\n";
+//    umfpack_di_free_numeric (&Numeric);
+//    
+//    for (i = 0; i < sizeof(x); i++) {
+//        vec3 indices = fluidCells[i];
+//        pressures[indices.x][indices.y][indices.z] = x[i];
+//    }
 }
+
+//void Grid::computePressure(){
+//    fluidCellIndex();
+//    int size = fluidCells.size();
+//    double x[size];
+//    double b[size];
+//    
+//    vector<float> val;
+//    vector<float> tempval;
+//    vector<int> ival;
+//    vector<int> tempival;
+//    vector<int> rval;
+//    int colCounter=0;
+//    rval.push_back(colCounter);
+//    
+//    for (int i=0;i<xcells;i++){
+//        for (int j=0; j<ycells; j++){
+//            for (int k=0; k<zcells; k++){
+//                if (gridComponents[i][j][k] != AIR) {
+//                    int n=0;
+//                    int ns=6;
+//                    bool fx, fy, fz;
+//                    if (i>0){
+//                        if (gridComponents[i-1][j][k]==FLUID){
+//                            //printf("#1\n");
+//                            val.push_back(1);
+//                            ival.push_back(k+zcells*j+zcells*ycells*(i-1));
+//                            n++;
+//                        }
+//                    }
+//                    if (j>0){
+//                        if (gridComponents[i][j-1][k]==FLUID){
+//                            val.push_back(1);
+//                            ival.push_back(k+zcells*(j-1)+zcells*ycells*i);
+//                            n++;
+//                        }
+//                        
+//                    }
+//                    if (k>0) {
+//                        if (gridComponents[i][j][k-1]==FLUID){
+//                            val.push_back(1);
+//                            ival.push_back(k-1+zcells*j+zcells*ycells*i);
+//                            n++;
+//                        }
+//                        
+//                    }
+//                    if (k<zcells-1){
+//                        if (gridComponents[i][j][k+1]==FLUID){
+//                            tempval.push_back(1);
+//                            tempival.push_back(k+1+zcells*j+zcells*ycells*i);
+//                            n++;
+//                        }
+//                    }
+//                    if (j<ycells-1){
+//                        if (gridComponents[i][j+1][k]==FLUID){
+//                            tempval.push_back(1);
+//                            tempival.push_back(k+zcells*(j+1)+zcells*ycells*i);
+//                            n++;
+//                        }
+//                        
+//                    } if (i<xcells-1){
+//                        if (gridComponents[i+1][j][k]==FLUID){
+//                            tempval.push_back(1);
+//                            tempival.push_back(k+zcells*j+zcells*ycells*(i+1));
+//                            n++;
+//                        }
+//                    }
+//                    if (i==0){
+//                        ns--;
+//                        if (j==0){
+//                            ns--;
+//                            if (k==0){
+//                                ns--;
+//                            } else if (k==zcells-1){
+//                                ns--;
+//                            }
+//                        } else if (j==ycells-1){
+//                            ns--;
+//                        }
+//                    } else if (i==xcells-1){
+//                        ns--;
+//                    }
+//                    if (gridComponents[i][j][k]==FLUID){
+//                        val.push_back(-1*ns);
+//                        ival.push_back(k+zcells*j+zcells*ycells*i);
+//                        n++;
+//                    }
+//                    for (int r =0;r<tempval.size();r++){
+//                        val.push_back(tempval[r]);
+//                        ival.push_back(tempival[r]);
+//                    }
+//                    tempval.clear();
+//                    tempival.clear();
+//                    colCounter+=n;
+//                    rval.push_back(colCounter);
+//                    b[k+zcells*j+zcells*ycells*i] = DENSITY*h*(xvelocityOld[i+1][j][k]-xvelocityOld[i][j][k]
+//                                                               +yvelocityOld[i][j+1][k]-yvelocityOld[i][j][k]
+//                                                               +zvelocityOld[i][j][k+1]-zvelocityOld[i][j][k])/timeStep - (ns-n)*PATM;
+//                }
+//            }
+//        }
+//    }
+//    int c=val.size();
+//    double value[c];
+//    int ivalue[c];
+//    int pvalue[rval.size()];
+//    for (int g=0;g<ival.size();g++){
+//        ivalue[g]=ival[g];
+//        value[g]=1;
+//    }
+//    for (int m=0;m<rval.size();m++){
+//        pvalue[m]=rval[m];
+//    }
+//    
+//    int status;
+//    double *null = (double *) NULL ;
+//    int i,j,k;
+//    void *Symbolic, *Numeric ;
+//    status = umfpack_di_symbolic (size, size, pvalue, ivalue, value, &Symbolic, null, null) ;
+//    status = umfpack_di_numeric (pvalue, ivalue, value, Symbolic, &Numeric, null, null);
+//    umfpack_di_free_symbolic (&Symbolic) ;
+//    status = umfpack_di_solve (UMFPACK_At, pvalue, ivalue, value, x, b, Numeric, null, null) ;
+//    umfpack_di_free_numeric (&Numeric) ;
+//    for (i = 0; i<xcells; i++){
+//        for (j = 0; j<ycells; j++){
+//            for (k = 0; k<zcells; k++){
+//                if (isfinite(x[k+j*zcells+i*ycells*zcells])){
+//                    pressures[i][j][k]=x[k+j*zcells+i*ycells*zcells];
+//                } else {
+//                    pressures[i][j][k]=0.0;
+//                }
+//            }
+//        }
+//    }
+//    for (i=0;i<size;i++) {printf("x[%i]= %f\n",i,x[i]);}
+//    
+//}
 
 
 // get all particles within a radius of a point x,y,z
@@ -360,9 +534,9 @@ void Grid::computeNonAdvection() {
         for (int j=0; j < ycells; j++) {
             for (int k=0; k < zcells; k++) {
                 xvelocityNew[i][j][k] = 0.0f;
-                cout << "xvel old" << xvelocityNew[i][j][k] << "\n";
+                //cout << "xvel old" << xvelocityNew[i][j][k] << "\n";
                 xvelocityNew[i][j][k] += computePressureToAdd(i,j,k,X_AXIS);
-                cout << "xvel new" << xvelocityNew[i][j][k] << "\n";
+                //cout << "xvel new" << xvelocityNew[i][j][k] << "\n";
             }
         }
     }
@@ -399,8 +573,8 @@ float Grid::computePressureToAdd(int i, int j, int k, int AXIS) {
             if (i-1 < 0 || i >= xcells) {
                 return 0.0f;
             } else {
-                cout << "X PRESSURE TO BE ADDED" << "\n";
-                cout << "pressures[i][j][k]-pressures[i-1][j][k]) -->" << pressures[i][j][k] << " - " << pressures[i-1][j][k] << "\n";
+//                cout << "X PRESSURE TO BE ADDED" << "\n";
+//                cout << "pressures[i][j][k]-pressures[i-1][j][k]) -->" << pressures[i][j][k] << " - " << pressures[i-1][j][k] << "\n";
                 return -timeStep*1.0f/DENSITY*(pressures[i][j][k]-pressures[i-1][j][k])/h;
             }
         case Y_AXIS:

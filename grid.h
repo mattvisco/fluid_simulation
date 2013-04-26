@@ -65,6 +65,9 @@ public:
     int zcells;
     float timeStep; // in milliseconds ?
     float maxVelocity;
+    vector<vec3> fluidCells;
+    vector<vec3> fluidCellIndex();
+    int findFluidCell(int, int, int);
     vector<Particle>* particles;
     vector<vector<vector<float> > > pressures; 
     vector<vector<vector<float> > > xvelocityOld; 
@@ -82,7 +85,7 @@ public:
     void setupParticleGrid();
     vec3 getCell(Particle&);
     void clearGrid();
-
+    int countFluid();
     vector<Particle> getNeighbors(float,float,float,float);
     vector<vector<Particle> > getCellNeighbors(float,float,float);
     float distance(vec3,vec3);
