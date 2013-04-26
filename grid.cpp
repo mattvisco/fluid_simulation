@@ -115,11 +115,12 @@ void Grid::clearParticleCopies() {
 
 void Grid::computePressure(){
     int size=xcells*ycells*zcells;
-    printf("size = %i, xcells = %i, ycells = %i, zcells = %i\n", size, xcells, ycells, zcells);
     double x[size];
     double b[size];
     vector<float> val;
+    vector<float> tempval;
     vector<int> ival;
+    vector<int> tempival;
     vector<int> rval;
     int colCounter=0;
     rval.push_back(colCounter);
@@ -127,167 +128,120 @@ void Grid::computePressure(){
         for (int j=0; j<ycells; j++){
             for (int k=0; k<zcells; k++){
                 int n=0;
-                if (i==0){
-                    if (particleCopies[i+1][j][k].size()!=0){
+                int ns=6;
+                bool fx, fy, fz;
+                if (i>0){
+                    if (gridComponents[i-1][j][k]==FLUID){
                         //printf("#1\n");
                         val.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
-                        ival.push_back(k+zcells*j+zcells*ycells*(i+1));
+                        ival.push_back(k+zcells*j+zcells*ycells*(i-1));
                         n++;
+                    }
+                }
+                if (j>0){
+                    if (gridComponents[i][j-1][k]==FLUID){
+                        val.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
+                        ival.push_back(k+zcells*(j-1)+zcells*ycells*i);
+                        n++;
+                    }
+                    
+                }
+                if (k>0) {
+                    if (gridComponents[i][j][k-1]==FLUID){
+                        val.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
+                        ival.push_back(k-1+zcells*j+zcells*ycells*i);
+                        n++;
+                    }
+                    
+                }
+                if (k<zcells-1){
+                    if (gridComponents[i][j][k+1]==FLUID){
+                        tempval.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
+                        tempival.push_back(k+1+zcells*j+zcells*ycells*i);
+                        n++;
+                    }
+                }
+                if (j<ycells-1){
+                    if (gridComponents[i][j+1][k]==FLUID){
+                        tempval.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
+                        tempival.push_back(k+zcells*(j+1)+zcells*ycells*i);
+                        n++;
+                    }
+                    
+                } if (i<xcells-1){
+                    if (gridComponents[i+1][j][k]==FLUID){
+                        tempval.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
+                        tempival.push_back(k+zcells*j+zcells*ycells*(i+1));
+                        n++;
+                    }
+                }
+                if (i==0){
+                    ns--;
+                    if (j==0){
+                        ns--;
+                        if (k==0){
+                            ns--;
+                        } else if (k==zcells-1){
+                            ns--;
+                        }
+                    } else if (j==ycells-1){
+                        ns--;
                     }
                 } else if (i==xcells-1){
-                    if (particleCopies[i-1][j][k].size()!=0){
-                        //printf("#2\n");
-                        val.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
-                        ival.push_back(k+zcells*j+zcells*ycells*(i-1));
-                        n++;
-                    }
-                } else {
-                    if (particleCopies[i-1][j][k].size()!=0){
-                        //printf("#3\n");
-                        val.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
-                        ival.push_back(k+zcells*j+zcells*ycells*(i-1));
-                        n++;
-                    }
-                    if (particleCopies[i+1][j][k].size()!=0){
-                        //printf("#4\n");
-                        val.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
-                        ival.push_back(k+zcells*j+zcells*ycells*(i+1));
-                        n++;
-                    }
+                    ns--;
                 }
-                if (j==0){
-                    if (particleCopies[i][j+1][k].size()!=0){
-                        //printf("#5\n");
-                        val.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
-                        ival.push_back(k+zcells*(j+1)+zcells*ycells*i);
-                        n++;
-                    }
-                } else if (j==ycells-1){
-                    if (particleCopies[i][j-1][k].size()!=0){
-                        //printf("#6\n");
-                        val.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
-                        ival.push_back(k+zcells*(j-1)+zcells*ycells*i);
-                        n++;
-                    }
-                } else {
-                    if (particleCopies[i][j-1][k].size()!=0){
-                        //printf("#7\n");
-                        val.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
-                        ival.push_back(k+zcells*(j-1)+zcells*ycells*i);
-                        n++;
-                    }
-                    if (particleCopies[i][j+1][k].size()!=0){
-                        //printf("#8\n");
-                        val.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
-                        ival.push_back(k+zcells*(j+1)+zcells*ycells*i);
-                        n++;
-                    }
-                }
-                if (k==0){
-                    if (particleCopies[i][j][k+1].size()!=0){
-                        //printf("#9\n");
-                        val.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
-                        ival.push_back(k+1+zcells*j+zcells*ycells*i);
-                        n++;
-                    }
-                } else if (k==zcells-1){
-                    if (particleCopies[i][j][k-1].size()!=0){
-                        //printf("#10\n");
-                        val.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
-                        ival.push_back(k-1+zcells*j+zcells*ycells*i);
-                        n++;
-                    }
-                } else {
-                    if (particleCopies[i][j][k-1].size()!=0){
-                        //printf("#11\n");
-                        val.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
-                        ival.push_back(k-1+zcells*j+zcells*ycells*i);
-                        n++;
-                    }
-                    if (particleCopies[i][j][k+1].size()!=0){
-                        //printf("#12\n");
-                        val.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
-                        ival.push_back(k+1+zcells*j+zcells*ycells*i);
-                        n++;
-                    }
-                }
-                if (particleCopies[i][j][k].size()!=0){
-                    val.push_back((1/DENSITY)*(timeStep)*n/(h*h));
+                if (gridComponents[i][j][k]==FLUID){
+                    val.push_back((1/DENSITY)*(timeStep)*ns/(h*h));
                     ival.push_back(k+zcells*j+zcells*ycells*i);
-                    colCounter+=n+1;
-                    rval.push_back(colCounter);
-                    
-                } else {
-                    colCounter+=n;
-                    rval.push_back(colCounter);
+                    n++;
                 }
+                for (int r =0;r<tempval.size();r++){
+                    val.push_back(tempval[r]);
+                    ival.push_back(tempival[r]);
+                }
+                tempval.clear();
+                tempival.clear();
+                colCounter+=n;
+                rval.push_back(colCounter);
                 b[k+zcells*j+zcells*ycells*i] = (-1)*(xvelocityOld[i+1][j][k]-xvelocityOld[i][j][k]
                                                      +yvelocityOld[i][j+1][k]-yvelocityOld[i][j][k]
                                                      +zvelocityOld[i][j][k+1]-zvelocityOld[i][j][k])/h;
-                //printf("b value = %f\n", b[k+zcells*j+zcells*ycells*i]);
             }
         }
     }
-    
-    int it=150;
-    int tol=1.e-6;
     int c=val.size();
-    int d=ival.size();
     double value[c];
     int ivalue[c];
     int pvalue[rval.size()];
-    printf("val size = %i, ival size = %i\n",c,d);
     for (int g=0;g<ival.size();g++){
         ivalue[g]=ival[g];
-        value[g]=val[g];
-        //printf("ivalue = %i, value = %f, g = %i\n",ivalue[g],value[g],g);
+        value[g]=1;
     }
     for (int m=0;m<rval.size();m++){
         pvalue[m]=rval[m];
-        //printf("rval= = %i m = %i\n", rval[m],m);
     }
     int status;
     double *null = (double *) NULL ;
-    int i ;
+    int i,j,k;
     void *Symbolic, *Numeric ;
     status = umfpack_di_symbolic (size, size, pvalue, ivalue, value, &Symbolic, null, null) ;
-    printf("Checkpoint1\n");
-    if (status==UMFPACK_OK){
-        printf("yes\n");
-    } else {
-        printf("%i\n",status);
-    }
     status = umfpack_di_numeric (pvalue, ivalue, value, Symbolic, &Numeric, null, null);
-    printf("Checkpoint2\n");
-    if (status==UMFPACK_OK){
-        printf("yes\n");
-    } else {
-        printf("%i\n",status);
-    }
-    
     umfpack_di_free_symbolic (&Symbolic) ;
-    printf("Checkpoint3\n");
     status = umfpack_di_solve (UMFPACK_At, pvalue, ivalue, value, x, b, Numeric, null, null) ;
-    if (status==UMFPACK_OK){
-        printf("yes\n");
-    } else {
-        printf("%i\n",status);
-    }
-    printf("Checkpoint4\n");
-    //umfpack_di_free_numeric (&Numeric) ;
-    for (i = 0 ; i < size ; i++) printf ("x [%d] = %g\n", i, x [i]) ;
-    exit(0);
-    /*
-    for (int ii=0;ii<xcells;ii++){
-        for (int jj=0;jj<ycells;jj++){
-            for (int kk=0;kk<zcells;kk++){
-                pressures[ii][jj][kk]=x[kk+zcells*jj+zcells*ycells*ii];
+    umfpack_di_free_numeric (&Numeric) ;
+    for (i = 0; i<xcells; i++){
+        for (j = 0; j<ycells; j++){
+            for (k = 0; k<zcells; k++){
+                if (isfinite(x[k+j*zcells+i*ycells*zcells])){
+                    pressures[i][j][k]=x[k+j*zcells+i*ycells*zcells];
+                } else {
+                    pressures[i][j][k]=0.0;
+                }
             }
         }
     }
-     */
-     
-     
+    for (i=0;i<size;i++) {printf("x[%i]= %f\n",i,x[i]);}
+    
 }
 
 
@@ -307,15 +261,17 @@ vector<Particle> Grid::getNeighbors(float x, float y, float z, float radius) {
     return neighbors;
 }
 
+
+
 float Grid::distance(vec3 p1, vec3 p2) {
     return length(p1 - p2);
 }
 
 
 vector<vector<Particle> > Grid::getCellNeighbors(float x, float y, float z) {
-    float xcell = std::min(std::max(0.0f, (float)floor((x+0.5f)/h)), std::max((float)xcells-1.0f, 0.0f));
-    float ycell = std::min(std::max(0.0f, (float)floor((y+0.5f)/h)), std::max((float)ycells-1.0f, 0.0f));
-    float zcell = std::min(std::max(0.0f, (float)floor((z+0.5f)/h)), std::max((float)zcells-1.0f, 0.0f));
+    float xcell = std::min(std::max(0.0f, (float)floor((x)/h)), std::max((float)xcells-1.0f, 0.0f));
+    float ycell = std::min(std::max(0.0f, (float)floor((y)/h)), std::max((float)ycells-1.0f, 0.0f));
+    float zcell = std::min(std::max(0.0f, (float)floor((z)/h)), std::max((float)zcells-1.0f, 0.0f));
     
     float xplus = std::min(xcell + 1.0f, xcells - 1.0f);
     float yplus = std::min(ycell + 1.0f, ycells - 1.0f);
