@@ -133,14 +133,14 @@ void Grid::computePressure(){
                 if (i>0){
                     if (gridComponents[i-1][j][k]==FLUID){
                         //printf("#1\n");
-                        val.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
+                        val.push_back(1);
                         ival.push_back(k+zcells*j+zcells*ycells*(i-1));
                         n++;
                     }
                 }
                 if (j>0){
                     if (gridComponents[i][j-1][k]==FLUID){
-                        val.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
+                        val.push_back(1);
                         ival.push_back(k+zcells*(j-1)+zcells*ycells*i);
                         n++;
                     }
@@ -148,7 +148,7 @@ void Grid::computePressure(){
                 }
                 if (k>0) {
                     if (gridComponents[i][j][k-1]==FLUID){
-                        val.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
+                        val.push_back(1);
                         ival.push_back(k-1+zcells*j+zcells*ycells*i);
                         n++;
                     }
@@ -156,21 +156,21 @@ void Grid::computePressure(){
                 }
                 if (k<zcells-1){
                     if (gridComponents[i][j][k+1]==FLUID){
-                        tempval.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
+                        tempval.push_back(1);
                         tempival.push_back(k+1+zcells*j+zcells*ycells*i);
                         n++;
                     }
                 }
                 if (j<ycells-1){
                     if (gridComponents[i][j+1][k]==FLUID){
-                        tempval.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
+                        tempval.push_back(1);
                         tempival.push_back(k+zcells*(j+1)+zcells*ycells*i);
                         n++;
                     }
                     
                 } if (i<xcells-1){
                     if (gridComponents[i+1][j][k]==FLUID){
-                        tempval.push_back((1/DENSITY)*(timeStep)*(-1)/(h*h));
+                        tempval.push_back(1);
                         tempival.push_back(k+zcells*j+zcells*ycells*(i+1));
                         n++;
                     }
@@ -191,7 +191,7 @@ void Grid::computePressure(){
                     ns--;
                 }
                 if (gridComponents[i][j][k]==FLUID){
-                    val.push_back((1/DENSITY)*(timeStep)*ns/(h*h));
+                    val.push_back(-1*ns);
                     ival.push_back(k+zcells*j+zcells*ycells*i);
                     n++;
                 }
@@ -203,9 +203,9 @@ void Grid::computePressure(){
                 tempival.clear();
                 colCounter+=n;
                 rval.push_back(colCounter);
-                b[k+zcells*j+zcells*ycells*i] = (-1)*(xvelocityOld[i+1][j][k]-xvelocityOld[i][j][k]
+                b[k+zcells*j+zcells*ycells*i] = DENSITY*h*(xvelocityOld[i+1][j][k]-xvelocityOld[i][j][k]
                                                      +yvelocityOld[i][j+1][k]-yvelocityOld[i][j][k]
-                                                     +zvelocityOld[i][j][k+1]-zvelocityOld[i][j][k])/h;
+                                                     +zvelocityOld[i][j][k+1]-zvelocityOld[i][j][k])/timeStep - (ns-n)*PATM;
             }
         }
     }
@@ -220,6 +220,7 @@ void Grid::computePressure(){
     for (int m=0;m<rval.size();m++){
         pvalue[m]=rval[m];
     }
+    
     int status;
     double *null = (double *) NULL ;
     int i,j,k;
@@ -253,9 +254,9 @@ vector<Particle> Grid::getNeighbors(float x, float y, float z, float radius) {
     vector<Particle> neighbors;
     for (int i = 0; i < cellNeighbors.size(); i++) {
         for (int j = 0; j < cellNeighbors[i].size(); j++) {
-            if (distance(cellNeighbors[i][j].pos, vec3(x,y,z)) <= radius) { // < vs. <= ? --- this is a sphere.....
+            //if (distance(cellNeighbors[i][j].pos, vec3(x,y,z)) <= radius) { // < vs. <= ? --- this is a sphere.....
                 neighbors.push_back(cellNeighbors[i][j]);
-            }
+            //}
         }
     }
     return neighbors;
@@ -364,7 +365,9 @@ void Grid::computeNonAdvection() {
         for (int j=0; j < ycells; j++) {
             for (int k=0; k < zcells; k++) {
                 xvelocityNew[i][j][k] = 0.0f;
+                cout << "xvel old" << xvelocityNew[i][j][k] << "\n";
                 xvelocityNew[i][j][k] += computePressureToAdd(i,j,k,X_AXIS);
+                cout << "xvel new" << xvelocityNew[i][j][k] << "\n";
             }
         }
     }
@@ -403,6 +406,8 @@ float Grid::computePressureToAdd(int i, int j, int k, int AXIS) {
             if (i-1 < 0 || i >= xcells) {
                 return 0.0f;
             } else {
+                cout << "X PRESSURE TO BE ADDED" << "\n";
+                cout << "pressures[i][j][k]-pressures[i-1][j][k]) -->" << pressures[i][j][k] << " - " << pressures[i-1][j][k] << "\n";
                 return -timeStep*1.0f/DENSITY*(pressures[i][j][k]-pressures[i-1][j][k])/h;
             }
         case Y_AXIS:
