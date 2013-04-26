@@ -113,7 +113,7 @@ void myDisplay(void) {
 }
 
 void setupParticles() {
-    for (int i = 0; i < 10; i++) {
+    for (int i = 5; i < 10; i++) {
         for (int j = 0; j < 10; j++) {
             for (int k = 0; k < 10; k++) {
                 Particle p(vec3(i+(rand() % 99) * 0.01,j+(rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(1,0,0),vec3(1,0,0),1,1);
