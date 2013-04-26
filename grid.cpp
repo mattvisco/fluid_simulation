@@ -124,6 +124,7 @@ void Grid::computePressure(){
     for (int i=0;i<xcells;i++){
         for (int j=0; j<ycells; j++){
             for (int k=0; k<zcells; k++){
+                if (gridComponents[i][j][k]!=AIR) {
                 int n=0;
                 int ns=6;
                 bool fx, fy, fz;
@@ -203,6 +204,7 @@ void Grid::computePressure(){
                 b[k+zcells*j+zcells*ycells*i] = DENSITY*h*(xvelocityOld[i+1][j][k]-xvelocityOld[i][j][k]
                                                      +yvelocityOld[i][j+1][k]-yvelocityOld[i][j][k]
                                                      +zvelocityOld[i][j][k+1]-zvelocityOld[i][j][k])/timeStep - (ns-n)*PATM;
+                }
             }
         }
     }
@@ -251,9 +253,9 @@ vector<Particle> Grid::getNeighbors(float x, float y, float z, float radius) {
     vector<Particle> neighbors;
     for (int i = 0; i < cellNeighbors.size(); i++) {
         for (int j = 0; j < cellNeighbors[i].size(); j++) {
-            //if (distance(cellNeighbors[i][j].pos, vec3(x,y,z)) <= radius) { // < vs. <= ? --- this is a sphere.....
+            if (distance(cellNeighbors[i][j].pos, vec3(x,y,z)) <= radius) { // < vs. <= ? --- this is a sphere.....
                 neighbors.push_back(cellNeighbors[i][j]);
-            //}
+            }
         }
     }
     return neighbors;
