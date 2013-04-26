@@ -9,10 +9,6 @@
 
 #include "grid.h"
 
-
-
-
-
 Grid::Grid(float xdim, float ydim, float zdim, float h) {
     Grid::xdim = xdim;
     Grid::ydim = ydim;
@@ -39,7 +35,6 @@ Grid::Grid(float xdim, float ydim, float zdim, float h) {
     // copies of particles and what component is in grid
     particleCopies.resize(xcells);
     gridComponents.resize(xcells);
-    #pragma omp parallel for
     for (int i = 0; i < xcells; i++) {
         particleCopies[i].resize(ycells);
         gridComponents[i].resize(ycells);
@@ -56,7 +51,6 @@ void Grid::setParticles(vector<Particle>* particles) {
 
 void Grid::setupVector(vector<vector<vector<float> > >& vec, int xsize, int ysize, int zsize) {
     vec.resize(xsize);
-    #pragma omp parallel for
     for (int i = 0; i < xsize; i++) {
         vec[i].resize(ysize);
         for (int j = 0; j < ysize; j++) {
@@ -100,149 +94,173 @@ vec3 Grid::getCell(Particle& particle) {
 }
 
 // clear the particleCopies and gridComponents grid
+// default is AIR
 void Grid::clearParticleCopies() {
-    #pragma omp parallel for
     for (int i = 0; i < xcells; i++) {
         for (int j = 0; j < ycells; j++) {
             for (int k = 0; k < zcells; k++) {
                 particleCopies[i][j][k].clear();
-                gridComponents[i][j][k] = NONE;
+                gridComponents[i][j][k] = AIR;
             }
         }
     }
 }
 
-
-void Grid::computePressure(){
-    int size=xcells*ycells*zcells;
-    double x[size];
-    double b[size];
-    vector<float> val;
-    vector<float> tempval;
-    vector<int> ival;
-    vector<int> tempival;
-    vector<int> rval;
-    int colCounter=0;
-    rval.push_back(colCounter);
-    for (int i=0;i<xcells;i++){
-        for (int j=0; j<ycells; j++){
-            for (int k=0; k<zcells; k++){
-                int n=0;
-                int ns=6;
-                bool fx, fy, fz;
-                if (i>0){
-                    if (gridComponents[i-1][j][k]==FLUID){
-                        //printf("#1\n");
-                        val.push_back(1);
-                        ival.push_back(k+zcells*j+zcells*ycells*(i-1));
-                        n++;
-                    }
-                }
-                if (j>0){
-                    if (gridComponents[i][j-1][k]==FLUID){
-                        val.push_back(1);
-                        ival.push_back(k+zcells*(j-1)+zcells*ycells*i);
-                        n++;
-                    }
-                    
-                }
-                if (k>0) {
-                    if (gridComponents[i][j][k-1]==FLUID){
-                        val.push_back(1);
-                        ival.push_back(k-1+zcells*j+zcells*ycells*i);
-                        n++;
-                    }
-                    
-                }
-                if (k<zcells-1){
-                    if (gridComponents[i][j][k+1]==FLUID){
-                        tempval.push_back(1);
-                        tempival.push_back(k+1+zcells*j+zcells*ycells*i);
-                        n++;
-                    }
-                }
-                if (j<ycells-1){
-                    if (gridComponents[i][j+1][k]==FLUID){
-                        tempval.push_back(1);
-                        tempival.push_back(k+zcells*(j+1)+zcells*ycells*i);
-                        n++;
-                    }
-                    
-                } if (i<xcells-1){
-                    if (gridComponents[i+1][j][k]==FLUID){
-                        tempval.push_back(1);
-                        tempival.push_back(k+zcells*j+zcells*ycells*(i+1));
-                        n++;
-                    }
-                }
-                if (i==0){
-                    ns--;
-                    if (j==0){
-                        ns--;
-                        if (k==0){
-                            ns--;
-                        } else if (k==zcells-1){
-                            ns--;
-                        }
-                    } else if (j==ycells-1){
-                        ns--;
-                    }
-                } else if (i==xcells-1){
-                    ns--;
-                }
-                if (gridComponents[i][j][k]==FLUID){
-                    val.push_back(-1*ns);
-                    ival.push_back(k+zcells*j+zcells*ycells*i);
-                    n++;
-                }
-                for (int r =0;r<tempval.size();r++){
-                    val.push_back(tempval[r]);
-                    ival.push_back(tempival[r]);
-                }
-                tempval.clear();
-                tempival.clear();
-                colCounter+=n;
-                rval.push_back(colCounter);
-                b[k+zcells*j+zcells*ycells*i] = DENSITY*h*(xvelocityOld[i+1][j][k]-xvelocityOld[i][j][k]
-                                                     +yvelocityOld[i][j+1][k]-yvelocityOld[i][j][k]
-                                                     +zvelocityOld[i][j][k+1]-zvelocityOld[i][j][k])/timeStep - (ns-n)*PATM;
+// get a vector of coordinates of fluid cells
+vector<vec3> Grid::getFluids() {
+    vector<vec3> fluids;
+    for (int i = 0; i < xcells; i++) {
+        for (int j = 0; j < ycells; j++) {
+            for (int k = 0; k < zcells; k++) {
+                if (gridComponents[i][j][k] == FLUID)
+                    fluids.push_back(vec3((float)i,(float)j,(float)k));
             }
         }
     }
-    int c=val.size();
-    double value[c];
-    int ivalue[c];
-    int pvalue[rval.size()];
-    for (int g=0;g<ival.size();g++){
-        ivalue[g]=ival[g];
-        value[g]=1;
+    return fluids;
+}
+
+bool Grid::isNeighbor(vec3 p1, vec3 p2) {
+    int i1 = (int)p1.x;
+    int j1 = (int)p1.y;
+    int k1 = (int)p1.z;
+    int i2 = (int)p2.x;
+    int j2 = (int)p2.y;
+    int k2 = (int)p2.z;
+    
+    bool left = (i1 == i2-1) && (j1 == j2) && (k1 == k2);
+    bool right = (i1 == i2+1) && (j1 == j2) && (k1 == k2);
+    bool top = (i1 == i2) && (j1 == j2-1) && (k1 == k2);
+    bool bottom = (i1 == i2) && (j1 == j2+1) && (k1 == k2);
+    bool front = (i1 == i2) && (j1 == j2) && (k1 == k2-1);
+    bool back = (i1 == i2) && (j1 == j2) && (k1 == k2+1);    
+    return left || right || top || bottom || back || front;
+}
+
+int Grid::getNonSolidNeighbors(vec3 p) {
+    int i = (int)p.x;
+    int j = (int)p.y;
+    int k = (int)p.z;
+    int nonSolids = 0;
+    if (i+1 < xcells && gridComponents[i+1][j][k] != SOLID)
+        nonSolids++;
+    if (i-1 >= 0 && gridComponents[i-1][j][k] != SOLID)
+        nonSolids++;
+    if (j+1 < ycells && gridComponents[i][j+1][k] != SOLID)
+        nonSolids++;
+    if (j-1 >= 0 && gridComponents[i][j-1][k] != SOLID)
+        nonSolids++;
+    if (k+1 < zcells && gridComponents[i][j][k+1] != SOLID)
+        nonSolids++;
+    if (k-1 >= 0 && gridComponents[i][j][k-1] != SOLID)
+        nonSolids++;
+    return nonSolids;
+}
+
+int Grid::getAirNeighbors(vec3 p) {
+    int i = (int)p.x;
+    int j = (int)p.y;
+    int k = (int)p.z;
+    int airs = 0;
+    if (i+1 < xcells && gridComponents[i+1][j][k] == AIR)
+        airs++;
+    if (i-1 >= 0 && gridComponents[i-1][j][k] == AIR)
+        airs++;
+    if (j+1 < ycells && gridComponents[i][j+1][k] == AIR)
+        airs++;
+    if (j-1 >= 0 && gridComponents[i][j-1][k] == AIR)
+        airs++;
+    if (k+1 < zcells && gridComponents[i][j][k+1] == AIR)
+        airs++;
+    if (k-1 >= 0 && gridComponents[i][j][k-1] == AIR)
+        airs++;
+    return airs;
+}
+
+// get divergence of cell u
+// not sure if forward difference is right
+float Grid::divergence(vec3 u) {
+    int i = (int)u.x;
+    int j = (int)u.y;
+    int k = (int)u.z;
+    return xvelocityOld[i+1][j][k]-xvelocityOld[i][j][k] + yvelocityOld[i][j+1][k]-yvelocityOld[i][j][k] + zvelocityOld[i][j][k+1]-zvelocityOld[i][j][k];
+}
+
+void Grid::computePressure(){
+    vector<vec3> fluids = getFluids();
+    int size=fluids.size();
+    double x[size];
+    double b[size];
+    double a[size][size];
+    
+    // zero out x
+    for (int i = 0; i < size; i++) {
+        x[i] = 0.0;
     }
-    for (int m=0;m<rval.size();m++){
-        pvalue[m]=rval[m];
+        
+    // for each row in a, store negative how many neighbors are fluid and 1s in columns of neighbors
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
+            if (isNeighbor(fluids[i], fluids[j])) {
+                a[i][j] = 1.0;
+            } else {
+                a[i][j] = 0.0;
+            }
+        }
+        a[i][i] = -1.0*getNonSolidNeighbors(fluids[i]);
     }
     
+    // for each entry in b
+    for (int i = 0; i < size; i++) {
+        b[i] = (DENSITY*h/timeStep)*divergence(fluids[i]) - getAirNeighbors(fluids[i])*PATM;
+    }
+    
+    // set up arrays for sparse matrix solve
+    //pvalue - total nonzero column entries so far - initial 0
+    //ivalue - row number of values in value
+    vector<int> pvaluevect;
+    int count = 0;
+    pvaluevect.push_back(count);
+    vector<double> valuevect;
+    vector<int> ivaluevect;
+    // go by columns
+    for (int j = 0; j < size; j++) {
+        int numInCol = 0;
+        for (int i = 0; i < size; i++) {
+            if (a[i][j] != 0) {
+                numInCol++;
+                valuevect.push_back(a[i][j]);
+                ivaluevect.push_back(i);
+            }
+        }
+        count += numInCol;
+        pvaluevect.push_back(count);
+    }
+    
+    // store these in arrays
+    int* pvalue = &pvaluevect[0];
+    int* ivalue = &ivaluevect[0];
+    double* value = &valuevect[0];
+
     int status;
     double *null = (double *) NULL ;
-    int i,j,k;
     void *Symbolic, *Numeric ;
     status = umfpack_di_symbolic (size, size, pvalue, ivalue, value, &Symbolic, null, null) ;
     status = umfpack_di_numeric (pvalue, ivalue, value, Symbolic, &Numeric, null, null);
     umfpack_di_free_symbolic (&Symbolic) ;
-    status = umfpack_di_solve (UMFPACK_At, pvalue, ivalue, value, x, b, Numeric, null, null) ;
+    status = umfpack_di_solve (UMFPACK_A, pvalue, ivalue, value, x, b, Numeric, null, null) ;
     umfpack_di_free_numeric (&Numeric) ;
-    for (i = 0; i<xcells; i++){
-        for (j = 0; j<ycells; j++){
-            for (k = 0; k<zcells; k++){
-                if (isfinite(x[k+j*zcells+i*ycells*zcells])){
-                    pressures[i][j][k]=x[k+j*zcells+i*ycells*zcells];
-                } else {
-                    pressures[i][j][k]=0.0;
-                }
-            }
-        }
-    }
-    for (i=0;i<size;i++) {printf("x[%i]= %f\n",i,x[i]);}
     
+    // store new pressure values
+    setupVector(pressures, xcells, ycells, zcells);
+    for (int s = 0; s < size; s++) {
+        int i = (int)fluids[s].x;
+        int j = (int)fluids[s].y;
+        int k = (int)fluids[s].z;
+        pressures[i][j][k] = x[s];
+    }
+    
+    //for (i=0;i<size;i++) {printf("x[%i]= %f\n",i,x[i]);}
 }
 
 
@@ -254,15 +272,13 @@ vector<Particle> Grid::getNeighbors(float x, float y, float z, float radius) {
     vector<Particle> neighbors;
     for (int i = 0; i < cellNeighbors.size(); i++) {
         for (int j = 0; j < cellNeighbors[i].size(); j++) {
-            //if (distance(cellNeighbors[i][j].pos, vec3(x,y,z)) <= radius) { // < vs. <= ? --- this is a sphere.....
+            if (distance(cellNeighbors[i][j].pos, vec3(x,y,z)) <= radius) { // < vs. <= ? --- this is a sphere.....
                 neighbors.push_back(cellNeighbors[i][j]);
-            //}
+            }
         }
     }
     return neighbors;
 }
-
-
 
 float Grid::distance(vec3 p1, vec3 p2) {
     return length(p1 - p2);
@@ -296,7 +312,6 @@ vector<vector<Particle> > Grid::getCellNeighbors(float x, float y, float z) {
 // at each velocity grid point (in center of cell faces), compute and store a weighted average of particle velocites within a **sphere** of radius h
 void Grid::storeOldVelocities() {
     // x
-    #pragma omp parallel for
     for (int i=0; i < xcells+1; i++) {
         for (int j=0; j < ycells; j++) {
             for (int k=0; k < zcells; k++) {
@@ -307,7 +322,6 @@ void Grid::storeOldVelocities() {
         }
     }
     // y
-    #pragma omp parallel for
     for (int i=0; i < xcells; i++) {
         for (int j=0; j < ycells+1; j++) {
             for (int k=0; k < zcells; k++) {
@@ -318,7 +332,6 @@ void Grid::storeOldVelocities() {
         }
     }
     // z
-    #pragma omp parallel for
     for (int i=0; i < xcells; i++) {
         for (int j=0; j < ycells; j++) {
             for (int k=0; k < zcells+1; k++) {
@@ -360,19 +373,15 @@ float Grid::weightedAverage(vector<Particle> particles, vec3 pt, int AXIS) {
 void Grid::computeNonAdvection() {
     computePressure();
     // x
-    #pragma omp parallel for
     for (int i=0; i < xcells+1; i++) {
         for (int j=0; j < ycells; j++) {
             for (int k=0; k < zcells; k++) {
                 xvelocityNew[i][j][k] = 0.0f;
-                cout << "xvel old" << xvelocityNew[i][j][k] << "\n";
                 xvelocityNew[i][j][k] += computePressureToAdd(i,j,k,X_AXIS);
-                cout << "xvel new" << xvelocityNew[i][j][k] << "\n";
             }
         }
     }
     // y
-    #pragma omp parallel for
     for (int i=0; i < xcells; i++) {
         for (int j=0; j < ycells+1; j++) {
             for (int k=0; k < zcells; k++) {
@@ -383,7 +392,6 @@ void Grid::computeNonAdvection() {
         }
     }
     // z
-    #pragma omp parallel for
     for (int i=0; i < xcells; i++) {
         for (int j=0; j < ycells; j++) {
             for (int k=0; k < zcells+1; k++) {
@@ -406,8 +414,6 @@ float Grid::computePressureToAdd(int i, int j, int k, int AXIS) {
             if (i-1 < 0 || i >= xcells) {
                 return 0.0f;
             } else {
-                cout << "X PRESSURE TO BE ADDED" << "\n";
-                cout << "pressures[i][j][k]-pressures[i-1][j][k]) -->" << pressures[i][j][k] << " - " << pressures[i-1][j][k] << "\n";
                 return -timeStep*1.0f/DENSITY*(pressures[i][j][k]-pressures[i-1][j][k])/h;
             }
         case Y_AXIS:
@@ -497,7 +503,6 @@ float Grid::getInterpolatedValue(float x, float y, float z, vector<vector<vector
 }
 
 void Grid::updateParticleVels() {
-    #pragma omp parallel for
     for (int i = 0; i < (*particles).size(); i++) {
         (*particles)[i].vel += getInterpolatedVelocityDifference((*particles)[i].pos);
     }
