@@ -39,14 +39,6 @@
 #define GRAVITY -9.81f // meters/second^2
 #define DENSITY 1000.0f
 
-<<<<<<< HEAD
-#define KCFL 5 // constant for CFL condition for timestep
-#define DAMPENING 0.5f
-#define AIR 0
-#define FLUID 1
-#define SOLID 2
-#define PATM 3000
-=======
 #define KCFL 1 // constant for CFL condition for timestep
 #define DAMPENING 0.5f
 #define NONE -1
@@ -55,7 +47,6 @@
 #define SOLID 2
 #define PATM 0
 #define KPRES 1
->>>>>>> 25b9fdca037853e6c72ee873a69af7c0b870f914
 
 
 

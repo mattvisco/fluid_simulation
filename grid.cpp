@@ -76,7 +76,7 @@ void Grid::setupParticleGrid() {
     
     for (int i = 0; i < (*particles).size(); i++) {
         vec3 cell = getCell((*particles)[i]);
-        Particle copy((*particles)[i]);
+        Particle copy(&((*particles)[i]));
         particleCopies[(int)cell.x][(int)cell.y][(int)cell.z].push_back(copy);
         
         // TODO -- Have this also iterate over some solid array
@@ -450,6 +450,10 @@ float Grid::computePressureToAdd(int i, int j, int k, int AXIS) {
                 return 0.0f;
                 //return -timeStep*1.0f/DENSITY*(-pressures[i][j-1][k])/h;
             } else {
+                if (j == 0 || j == 1 || j == 2) {
+                    //cout << "yvelocityOld[" <<i << "][" << j+1 << "][" << k << "] --> " << yvelocityOld[i][j+1][k] << " yvelocityOld[" << i << "][" << j << "][" << k << "]" << yvelocityOld[i][j][k] << "\n";
+                    //cout << "pressures[" <<i << "][" << j << "][" << k << "] - " << "pressures[" << i << "][" << j-1 << "][" << k << "]" << pressures[i][j][k] << " - " << pressures[i][j-1][k] << "\n \n";
+                }
                 return -timeStep*1.0f/DENSITY*(pressures[i][j][k]-pressures[i][j-1][k])/h;
             }
         case Z_AXIS:
@@ -608,14 +612,17 @@ void Grid::extrapolateVelocities() {
                                 // x
                                 if (i-1 >= 0 && gridComponents[i-1][j][k] != FLUID) {
                                     xvelocityNew[i][j][k] = avgNeighbLayers(neighbs, l, X_AXIS);
+//                                    cout << "xvelocityNew " << i << "," << j<<","<<k << "=" << xvelocityNew[i][j][k] << "\n";
                                 }
                                 // y
                                 if (j-1 >= 0 && gridComponents[i][j-1][k] != FLUID) {
                                     yvelocityNew[i][j][k] = avgNeighbLayers(neighbs, l, Y_AXIS);
+//                                    cout << "yvelocityNew " << i << "," << j<<","<<k << "=" << yvelocityNew[i][j][k] << "\n";
                                 }
                                 // z
                                 if (k-1 >= 0 && gridComponents[i][j][k-1] != FLUID) {
                                     zvelocityNew[i][j][k] = avgNeighbLayers(neighbs, l, Z_AXIS);
+//                                    cout << "zvelocityNew " << i << "," << j<<","<<k << "=" << zvelocityNew[i][j][k] << "\n";
                                 }
                                 layers[i][j][k] = l;
                             }

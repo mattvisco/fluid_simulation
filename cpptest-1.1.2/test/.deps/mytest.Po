@@ -45,8 +45,8 @@ mytest.o mytest.o: mytest.cpp /usr/include/c++/4.2.1/cstdlib \
   /usr/include/c++/4.2.1/climits \
   /usr/llvm-gcc-4.2/bin/../lib/gcc/i686-apple-darwin11/4.2.1/include/limits.h \
   /usr/llvm-gcc-4.2/bin/../lib/gcc/i686-apple-darwin11/4.2.1/include/syslimits.h \
-  /Developer/usr/llvm-gcc-4.2/lib/gcc/i686-apple-darwin11/4.2.1/include/limits.h \
-  /Developer/usr/llvm-gcc-4.2/lib/gcc/i686-apple-darwin11/4.2.1/include/syslimits.h \
+  /Applications/Xcode.app/Contents/Developer/usr/llvm-gcc-4.2/lib/gcc/i686-apple-darwin11/4.2.1/include/limits.h \
+  /Applications/Xcode.app/Contents/Developer/usr/llvm-gcc-4.2/lib/gcc/i686-apple-darwin11/4.2.1/include/syslimits.h \
   /usr/include/limits.h /usr/include/machine/limits.h \
   /usr/include/i386/limits.h /usr/include/i386/_limits.h \
   /usr/include/sys/syslimits.h /usr/include/c++/4.2.1/bits/stl_pair.h \
@@ -108,9 +108,9 @@ mytest.o mytest.o: mytest.cpp /usr/include/c++/4.2.1/cstdlib \
   ../../particle.h /usr/include/c++/4.2.1/fstream \
   /usr/include/c++/4.2.1/bits/basic_file.h \
   /usr/include/c++/4.2.1/bits/fstream.tcc /usr/include/c++/4.2.1/cmath \
-  /usr/include/math.h /usr/include/architecture/i386/math.h \
-  /usr/include/c++/4.2.1/bits/cmath.tcc ../../glm/glm.hpp \
-  ../../glm/core/_fixes.hpp /usr/include/c++/4.2.1/cfloat \
+  /usr/include/math.h /usr/include/c++/4.2.1/bits/cmath.tcc \
+  ../../glm/glm.hpp ../../glm/core/_fixes.hpp \
+  /usr/include/c++/4.2.1/cfloat \
   /usr/llvm-gcc-4.2/bin/../lib/gcc/i686-apple-darwin11/4.2.1/include/float.h \
   ../../glm/core/setup.hpp ../../glm/./core/_detail.hpp \
   ../../glm/./core/setup.hpp /usr/include/c++/4.2.1/cassert \
@@ -147,9 +147,83 @@ mytest.o mytest.o: mytest.cpp /usr/include/c++/4.2.1/cstdlib \
   ../../glm/./core/func_integer.hpp ../../glm/./core/func_integer.inl \
   ../../glm/./core/func_noise.hpp ../../glm/./core/func_noise.inl \
   ../../glm/./core/_swizzle.hpp ../../particle.h ../../grid.h \
-  /usr/include/sys/time.h ../../grid.cpp ../../grid.h ../../Particle.cpp \
-  ../../fluid_simulator.h ../../fluid_simulator.h \
-  ../../fluid_simulator.cpp
+  /usr/include/sys/time.h ../../UMFPACK/Include/umfpack.h \
+  ../../UMFPACK/Include/../../SuiteSparse_config/SuiteSparse_config.h \
+  ../../UMFPACK/Include/umfpack_symbolic.h \
+  ../../UMFPACK/Include/umfpack_numeric.h \
+  ../../UMFPACK/Include/umfpack_solve.h \
+  ../../UMFPACK/Include/umfpack_free_symbolic.h \
+  ../../UMFPACK/Include/umfpack_free_numeric.h \
+  ../../UMFPACK/Include/umfpack_defaults.h \
+  ../../UMFPACK/Include/umfpack_qsymbolic.h \
+  ../../UMFPACK/Include/umfpack_wsolve.h \
+  ../../UMFPACK/Include/umfpack_triplet_to_col.h \
+  ../../UMFPACK/Include/umfpack_col_to_triplet.h \
+  ../../UMFPACK/Include/umfpack_transpose.h \
+  ../../UMFPACK/Include/umfpack_scale.h \
+  ../../UMFPACK/Include/umfpack_get_lunz.h \
+  ../../UMFPACK/Include/umfpack_get_numeric.h \
+  ../../UMFPACK/Include/umfpack_get_symbolic.h \
+  ../../UMFPACK/Include/umfpack_save_numeric.h \
+  ../../UMFPACK/Include/umfpack_load_numeric.h \
+  ../../UMFPACK/Include/umfpack_save_symbolic.h \
+  ../../UMFPACK/Include/umfpack_load_symbolic.h \
+  ../../UMFPACK/Include/umfpack_get_determinant.h \
+  ../../UMFPACK/Include/umfpack_report_status.h \
+  ../../UMFPACK/Include/umfpack_report_info.h \
+  ../../UMFPACK/Include/umfpack_report_control.h \
+  ../../UMFPACK/Include/umfpack_report_matrix.h \
+  ../../UMFPACK/Include/umfpack_report_triplet.h \
+  ../../UMFPACK/Include/umfpack_report_vector.h \
+  ../../UMFPACK/Include/umfpack_report_symbolic.h \
+  ../../UMFPACK/Include/umfpack_report_numeric.h \
+  ../../UMFPACK/Include/umfpack_report_perm.h \
+  ../../UMFPACK/Include/umfpack_timer.h \
+  ../../UMFPACK/Include/umfpack_tictoc.h \
+  ../../UMFPACK/Include/../../AMD/Include/amd.h \
+  ../../UMFPACK/Include/../../AMD/Include/../../SuiteSparse_config/SuiteSparse_config.h \
+  ../../UMFPACK/Include/umfpack_global.h \
+  /System/Library/Frameworks/Accelerate.framework/Headers/Accelerate.h \
+  /System/Library/Frameworks/vecLib.framework/Headers/vecLib.h \
+  /System/Library/Frameworks/vecLib.framework/Headers/vecLibTypes.h \
+  /usr/llvm-gcc-4.2/bin/../lib/gcc/i686-apple-darwin11/4.2.1/include/xmmintrin.h \
+  /usr/llvm-gcc-4.2/bin/../lib/gcc/i686-apple-darwin11/4.2.1/include/mmintrin.h \
+  /usr/llvm-gcc-4.2/bin/../lib/gcc/i686-apple-darwin11/4.2.1/include/mm_malloc.h \
+  /usr/include/errno.h /usr/include/sys/errno.h \
+  /usr/llvm-gcc-4.2/bin/../lib/gcc/i686-apple-darwin11/4.2.1/include/emmintrin.h \
+  /System/Library/Frameworks/vecLib.framework/Headers/vBasicOps.h \
+  /System/Library/Frameworks/vecLib.framework/Headers/vecLibTypes.h \
+  /System/Library/Frameworks/vecLib.framework/Headers/vBigNum.h \
+  /System/Library/Frameworks/vecLib.framework/Headers/vectorOps.h \
+  /System/Library/Frameworks/vecLib.framework/Headers/vfp.h \
+  /System/Library/Frameworks/vecLib.framework/Headers/vDSP.h \
+  /System/Library/Frameworks/vecLib.framework/Headers/vBLAS.h \
+  /usr/include/AvailabilityMacros.h \
+  /System/Library/Frameworks/vecLib.framework/Headers/cblas.h \
+  /System/Library/Frameworks/vecLib.framework/Headers/clapack.h \
+  /System/Library/Frameworks/vecLib.framework/Headers/vForce.h \
+  /System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers/vImage.h \
+  /System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers/vImage_Types.h \
+  /usr/include/sys/types.h \
+  /usr/llvm-gcc-4.2/bin/../lib/gcc/i686-apple-darwin11/4.2.1/include/stdbool.h \
+  /System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers/Alpha.h \
+  /System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers/vImage_Types.h \
+  /System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers/Convolution.h \
+  /System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers/vImage_Types.h \
+  /System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers/Conversion.h \
+  /System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers/vImage_Types.h \
+  /System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers/Geometry.h \
+  /System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers/vImage_Types.h \
+  /System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers/Histogram.h \
+  /System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers/vImage_Types.h \
+  /System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers/Morphology.h \
+  /System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers/vImage_Types.h \
+  /System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers/BasicImageTypes.h \
+  /System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers/vImage_Types.h \
+  /System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers/Transform.h \
+  /System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers/vImage_Types.h \
+  ../../grid.h ../../grid.cpp ../../Particle.cpp ../../fluid_simulator.h \
+  ../../fluid_simulator.h ../../fluid_simulator.cpp
 
 /usr/include/c++/4.2.1/cstdlib:
 
@@ -311,9 +385,9 @@ mytest.o mytest.o: mytest.cpp /usr/include/c++/4.2.1/cstdlib \
 
 /usr/llvm-gcc-4.2/bin/../lib/gcc/i686-apple-darwin11/4.2.1/include/syslimits.h:
 
-/Developer/usr/llvm-gcc-4.2/lib/gcc/i686-apple-darwin11/4.2.1/include/limits.h:
+/Applications/Xcode.app/Contents/Developer/usr/llvm-gcc-4.2/lib/gcc/i686-apple-darwin11/4.2.1/include/limits.h:
 
-/Developer/usr/llvm-gcc-4.2/lib/gcc/i686-apple-darwin11/4.2.1/include/syslimits.h:
+/Applications/Xcode.app/Contents/Developer/usr/llvm-gcc-4.2/lib/gcc/i686-apple-darwin11/4.2.1/include/syslimits.h:
 
 /usr/include/limits.h:
 
@@ -481,8 +555,6 @@ mytest.o mytest.o: mytest.cpp /usr/include/c++/4.2.1/cstdlib \
 
 /usr/include/math.h:
 
-/usr/include/architecture/i386/math.h:
-
 /usr/include/c++/4.2.1/bits/cmath.tcc:
 
 ../../glm/glm.hpp:
@@ -627,9 +699,161 @@ mytest.o mytest.o: mytest.cpp /usr/include/c++/4.2.1/cstdlib \
 
 /usr/include/sys/time.h:
 
-../../grid.cpp:
+../../UMFPACK/Include/umfpack.h:
+
+../../UMFPACK/Include/../../SuiteSparse_config/SuiteSparse_config.h:
+
+../../UMFPACK/Include/umfpack_symbolic.h:
+
+../../UMFPACK/Include/umfpack_numeric.h:
+
+../../UMFPACK/Include/umfpack_solve.h:
+
+../../UMFPACK/Include/umfpack_free_symbolic.h:
+
+../../UMFPACK/Include/umfpack_free_numeric.h:
+
+../../UMFPACK/Include/umfpack_defaults.h:
+
+../../UMFPACK/Include/umfpack_qsymbolic.h:
+
+../../UMFPACK/Include/umfpack_wsolve.h:
+
+../../UMFPACK/Include/umfpack_triplet_to_col.h:
+
+../../UMFPACK/Include/umfpack_col_to_triplet.h:
+
+../../UMFPACK/Include/umfpack_transpose.h:
+
+../../UMFPACK/Include/umfpack_scale.h:
+
+../../UMFPACK/Include/umfpack_get_lunz.h:
+
+../../UMFPACK/Include/umfpack_get_numeric.h:
+
+../../UMFPACK/Include/umfpack_get_symbolic.h:
+
+../../UMFPACK/Include/umfpack_save_numeric.h:
+
+../../UMFPACK/Include/umfpack_load_numeric.h:
+
+../../UMFPACK/Include/umfpack_save_symbolic.h:
+
+../../UMFPACK/Include/umfpack_load_symbolic.h:
+
+../../UMFPACK/Include/umfpack_get_determinant.h:
+
+../../UMFPACK/Include/umfpack_report_status.h:
+
+../../UMFPACK/Include/umfpack_report_info.h:
+
+../../UMFPACK/Include/umfpack_report_control.h:
+
+../../UMFPACK/Include/umfpack_report_matrix.h:
+
+../../UMFPACK/Include/umfpack_report_triplet.h:
+
+../../UMFPACK/Include/umfpack_report_vector.h:
+
+../../UMFPACK/Include/umfpack_report_symbolic.h:
+
+../../UMFPACK/Include/umfpack_report_numeric.h:
+
+../../UMFPACK/Include/umfpack_report_perm.h:
+
+../../UMFPACK/Include/umfpack_timer.h:
+
+../../UMFPACK/Include/umfpack_tictoc.h:
+
+../../UMFPACK/Include/../../AMD/Include/amd.h:
+
+../../UMFPACK/Include/../../AMD/Include/../../SuiteSparse_config/SuiteSparse_config.h:
+
+../../UMFPACK/Include/umfpack_global.h:
+
+/System/Library/Frameworks/Accelerate.framework/Headers/Accelerate.h:
+
+/System/Library/Frameworks/vecLib.framework/Headers/vecLib.h:
+
+/System/Library/Frameworks/vecLib.framework/Headers/vecLibTypes.h:
+
+/usr/llvm-gcc-4.2/bin/../lib/gcc/i686-apple-darwin11/4.2.1/include/xmmintrin.h:
+
+/usr/llvm-gcc-4.2/bin/../lib/gcc/i686-apple-darwin11/4.2.1/include/mmintrin.h:
+
+/usr/llvm-gcc-4.2/bin/../lib/gcc/i686-apple-darwin11/4.2.1/include/mm_malloc.h:
+
+/usr/include/errno.h:
+
+/usr/include/sys/errno.h:
+
+/usr/llvm-gcc-4.2/bin/../lib/gcc/i686-apple-darwin11/4.2.1/include/emmintrin.h:
+
+/System/Library/Frameworks/vecLib.framework/Headers/vBasicOps.h:
+
+/System/Library/Frameworks/vecLib.framework/Headers/vecLibTypes.h:
+
+/System/Library/Frameworks/vecLib.framework/Headers/vBigNum.h:
+
+/System/Library/Frameworks/vecLib.framework/Headers/vectorOps.h:
+
+/System/Library/Frameworks/vecLib.framework/Headers/vfp.h:
+
+/System/Library/Frameworks/vecLib.framework/Headers/vDSP.h:
+
+/System/Library/Frameworks/vecLib.framework/Headers/vBLAS.h:
+
+/usr/include/AvailabilityMacros.h:
+
+/System/Library/Frameworks/vecLib.framework/Headers/cblas.h:
+
+/System/Library/Frameworks/vecLib.framework/Headers/clapack.h:
+
+/System/Library/Frameworks/vecLib.framework/Headers/vForce.h:
+
+/System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers/vImage.h:
+
+/System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers/vImage_Types.h:
+
+/usr/include/sys/types.h:
+
+/usr/llvm-gcc-4.2/bin/../lib/gcc/i686-apple-darwin11/4.2.1/include/stdbool.h:
+
+/System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers/Alpha.h:
+
+/System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers/vImage_Types.h:
+
+/System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers/Convolution.h:
+
+/System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers/vImage_Types.h:
+
+/System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers/Conversion.h:
+
+/System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers/vImage_Types.h:
+
+/System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers/Geometry.h:
+
+/System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers/vImage_Types.h:
+
+/System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers/Histogram.h:
+
+/System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers/vImage_Types.h:
+
+/System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers/Morphology.h:
+
+/System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers/vImage_Types.h:
+
+/System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers/BasicImageTypes.h:
+
+/System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers/vImage_Types.h:
+
+/System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers/Transform.h:
+
+/System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers/vImage_Types.h:
 
 ../../grid.h:
+
+../../grid.cpp:
 
 ../../Particle.cpp:
 
