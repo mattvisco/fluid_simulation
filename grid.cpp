@@ -75,7 +75,7 @@ void Grid::setupParticleGrid() {
     
     for (int i = 0; i < (*particles).size(); i++) {
         vec3 cell = getCell((*particles)[i]);
-        Particle copy((*particles)[i]);
+        Particle copy(&((*particles)[i]));
         particleCopies[(int)cell.x][(int)cell.y][(int)cell.z].push_back(copy);
         
         // TODO -- Have this also iterate over some solid array
@@ -136,7 +136,7 @@ bool Grid::isNeighbor(vec3 p1, vec3 p2) {
     bool top = (i1 == i2) && (j1 == j2-1) && (k1 == k2);
     bool bottom = (i1 == i2) && (j1 == j2+1) && (k1 == k2);
     bool front = (i1 == i2) && (j1 == j2) && (k1 == k2-1);
-    bool back = (i1 == i2) && (j1 == j2) && (k1 == k2+1);    
+    bool back = (i1 == i2) && (j1 == j2) && (k1 == k2+1);
     return left || right || top || bottom || back || front;
 }
 
@@ -220,7 +220,7 @@ void Grid::computePressure(){
     for (int i = 0; i < size; i++) {
         x[i] = 0.0;
     }
-        
+    
     // for each row in a, store negative how many neighbors are fluid and 1s in columns of neighbors
     for (int i = 0; i < size; i++) {
         for (int j = 0; j < size; j++) {
@@ -264,7 +264,7 @@ void Grid::computePressure(){
     int* pvalue = &pvaluevect[0];
     int* ivalue = &ivaluevect[0];
     double* value = &valuevect[0];
-
+    
     int status;
     double *null = (double *) NULL ;
     void *Symbolic, *Numeric ;
@@ -282,8 +282,6 @@ void Grid::computePressure(){
         int k = (int)fluids[s].z;
         pressures[i][j][k] = x[s];
     }
-    
-    //for (i=0;i<size;i++) {printf("x[%i]= %f\n",i,x[i]);}
 }
 
 
@@ -454,6 +452,10 @@ float Grid::computePressureToAdd(int i, int j, int k, int AXIS) {
                 return 0.0f;
                 //return -timeStep*1.0f/DENSITY*(-pressures[i][j-1][k])/h;
             } else {
+                if (j == 0 || j == 1 || j == 2) {
+                    //cout << "yvelocityOld[" <<i << "][" << j+1 << "][" << k << "] --> " << yvelocityOld[i][j+1][k] << " yvelocityOld[" << i << "][" << j << "][" << k << "]" << yvelocityOld[i][j][k] << "\n";
+                    //cout << "pressures[" <<i << "][" << j << "][" << k << "] - " << "pressures[" << i << "][" << j-1 << "][" << k << "]" << pressures[i][j][k] << " - " << pressures[i][j-1][k] << "\n \n";
+                }
                 return -timeStep*1.0f/DENSITY*(pressures[i][j][k]-pressures[i][j-1][k])/h;
             }
         case Z_AXIS:
@@ -612,14 +614,17 @@ void Grid::extrapolateVelocities() {
                                 // x
                                 if (i-1 >= 0 && gridComponents[i-1][j][k] != FLUID) {
                                     xvelocityNew[i][j][k] = avgNeighbLayers(neighbs, l, X_AXIS);
+//                                    cout << "xvelocityNew " << i << "," << j<<","<<k << "=" << xvelocityNew[i][j][k] << "\n";
                                 }
                                 // y
                                 if (j-1 >= 0 && gridComponents[i][j-1][k] != FLUID) {
                                     yvelocityNew[i][j][k] = avgNeighbLayers(neighbs, l, Y_AXIS);
+//                                    cout << "yvelocityNew " << i << "," << j<<","<<k << "=" << yvelocityNew[i][j][k] << "\n";
                                 }
                                 // z
                                 if (k-1 >= 0 && gridComponents[i][j][k-1] != FLUID) {
                                     zvelocityNew[i][j][k] = avgNeighbLayers(neighbs, l, Z_AXIS);
+//                                    cout << "zvelocityNew " << i << "," << j<<","<<k << "=" << zvelocityNew[i][j][k] << "\n";
                                 }
                                 layers[i][j][k] = l;
                             }

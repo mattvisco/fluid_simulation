@@ -69,8 +69,8 @@ public:
         TEST_ADD(GridTestSuite::testGetNeighbors)
         TEST_ADD(GridTestSuite::testWeightedAverage)
         TEST_ADD(GridTestSuite::testStoreOldVelocities)  
-        TEST_ADD(GridTestSuite::testInterpolation) 
-         
+        TEST_ADD(GridTestSuite::testInterpolation)
+        TEST_ADD(GridTestSuite::testextrapolateVelocities)
 	}
     
 protected:
@@ -101,8 +101,14 @@ protected:
         for(int i = 0; i < grid.xcells; i++) {
             for(int j = 0; j < grid.ycells; j++) {
                 for(int k = 0; k < grid.zcells; k++) {
-                    Particle justinsucksparticle(vec3(i,j,k),vec3(1,1,1),vec3(1,0,0),vec3(1,0,0),3.0,3.0);
-                    particles3.push_back(justinsucksparticle);
+                    Particle p(vec3(i+(rand() % 99) * 0.01,j+(rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(1,0,0),vec3(1,0,0),1,1);
+                    Particle p2(vec3(i + (rand() % 99) * 0.01,j + (rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(1,0,0),vec3(1,0,0),1,1);
+                    Particle p3(vec3(i+(rand() % 99) * 0.01,j+(rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(1,0,0),vec3(1,0,0),1,1);
+                    Particle p4(vec3(i + (rand() % 99) * 0.01,j + (rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(1,0,0),vec3(1,0,0),1,1);
+                    particles3.push_back(p);
+                    particles3.push_back(p2);
+                    particles3.push_back(p3);
+                    particles3.push_back(p4);
                 }
             }
         }
@@ -326,6 +332,16 @@ private:
         grid.xvelocityNew[1][1][1] = 1;
         grid.getInterpolatedVelocityDifference(vec3(1,0,0));
     }
+
+    //This shit fucks up cuz umfpack
+//    void testextrapolateVelocities() {
+//        grid.setParticles(&particles3);
+//        grid.setupParticleGrid(); // puts particles in correct grid cells
+//        grid.storeOldVelocities(); // stores the weighted averages of particles at grid points
+//        grid.computeTimeStep();
+//        grid.computeNonAdvection();
+//        grid.extrapolateVelocities();
+//    }
     
     void testSimulate() {
         Simulator simulator(&particles, xdim, ydim, zdim, h);

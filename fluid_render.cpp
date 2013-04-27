@@ -98,9 +98,8 @@ void myDisplay(void) {
     
     // Render all particles
     glBegin(GL_POINTS);
-    #pragma omp parallel for
     for (int i = 0; i < particles.size(); i++) {
-        glColor3f(0,0,1);
+        glColor3f(particles[i].color.x,particles[i].color.y,particles[i].color.z);
         glVertex3f(particles[i].pos.x, particles[i].pos.y, particles[i].pos.z);
     }
     glEnd();
@@ -115,7 +114,7 @@ void myDisplay(void) {
 
 void setupParticles() {
     for (int i = 5; i < 10; i++) {
-        for (int j = 0; j < 10; j++) {
+        for (int j = 0; j < 5; j++) {
             for (int k = 0; k < 10; k++) {
                 Particle p(vec3(i+(rand() % 99) * 0.01,j+(rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(1,0,0),vec3(1,0,0),1,1);
                 Particle p2(vec3(i + (rand() % 99) * 0.01,j + (rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(1,0,0),vec3(1,0,0),1,1);
@@ -127,12 +126,12 @@ void setupParticles() {
                 Particle p8(vec3(i + (rand() % 99) * 0.01,j + (rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(1,0,0),vec3(1,0,0),1,1);
                 particles.push_back(p);
                 particles.push_back(p2);
-                particles.push_back(p3);
-                particles.push_back(p4);
-                particles.push_back(p5);
-                particles.push_back(p6);
-                particles.push_back(p7);
-                particles.push_back(p8);
+//                particles.push_back(p3);
+//                particles.push_back(p4);
+//                particles.push_back(p5);
+//                particles.push_back(p6);
+//                particles.push_back(p7);
+//                particles.push_back(p8);
             }
         }
     }

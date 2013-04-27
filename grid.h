@@ -85,7 +85,7 @@ public:
     void setupParticleGrid();
     vec3 getCell(Particle&);
     void clearGrid();
-
+    int countFluid();
     vector<Particle> getNeighbors(float,float,float,float);
     vector<vector<Particle> > getCellNeighbors(float,float,float);
     float distance(vec3,vec3);
