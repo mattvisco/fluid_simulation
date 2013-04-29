@@ -26,7 +26,7 @@ for line in f:
         bpy.data.objects["Lampe"].select = False
         bpy.ops.object.delete() # Deletes selected objects
         bpy.data.objects["Camera"].select = True
-        bpy.data.objects["Lampe"].select = True
+        bpy.data.objects["Lamp"].select = True
     else:
         bpy.ops.object.metaball_add(type='BALL', location=(float(pos[0]),float(pos[1]),float(pos[2])))
 

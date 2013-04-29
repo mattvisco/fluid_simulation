@@ -37,20 +37,20 @@ void Simulator::simulate() {
 //                    cout << xMax << "\n";
 //                }
                 
-                float yVel = grid.yvelocityOld[i][j+1][k] - grid.yvelocityOld[i][j][k];
-
-                float r = 0,g = 0,b = 0;
-                if (yVel < .5) {
-                    b = 1;
-                } else if (yVel < 3.8) {
-                    g =1;
-                } else if (yVel < 5.7055) {
-                    r =1;
-                }
-                vector<Particle> parts = grid.particleCopies[i][j][k];
-                for (int s = 0; s < parts.size(); s++) {
-                    (*(parts[s].copy)).color = vec3(r,g,b);
-                }
+//                float yVel = grid.yvelocityOld[i][j+1][k] - grid.yvelocityOld[i][j][k];
+//
+//                float r = 0,g = 0,b = 0;
+//                if (yVel < .5) {
+//                    b = 1;
+//                } else if (yVel < 3.8) {
+//                    g =1;
+//                } else if (yVel < 5.7055) {
+//                    r =1;
+//                }
+//                vector<Particle> parts = grid.particleCopies[i][j][k];
+//                for (int s = 0; s < parts.size(); s++) {
+//                    (*(parts[s].copy)).color = vec3(r,g,b);
+//                }
 
                 
 //                1.07976
@@ -75,7 +75,7 @@ void Simulator::simulate() {
 //                }
 
                 
-                // PRESSURE COLOR MAP
+//                // PRESSURE COLOR MAP
 //                float pressure = grid.pressures[i][j][k];
 //                float r = 0,g = 0,b = 0;
 //                if (pressure < .1) {
