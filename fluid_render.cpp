@@ -35,9 +35,25 @@ float gridX, gridY, gridZ, cellSize;
 vector<Particle> particles;
 Simulator simulator;
 float xrot,yrot,zrot,xtrans,ytrans,zoom;
-
 ofstream outputfile;
+    int frame_number = 0;
 
+unsigned char* g_video_memory_start = NULL;
+unsigned char* g_video_memory_ptr = NULL;
+int g_video_seconds_total = 10;
+int g_video_fps = 25;
+
+// write into a file
+char name[1024];
+
+
+
+
+void reserve_video_memory () {
+    // 480 MB at 800x800 resolution 230.4 MB at 640x480 resolution
+    g_video_memory_ptr = (unsigned char*)malloc (viewport.w * viewport.h * 3 * g_video_fps * g_video_seconds_total);
+    g_video_memory_start = g_video_memory_ptr;
+}
 //
 // Simple init function
 //
@@ -91,6 +107,7 @@ void myDisplay(void) {
     glMatrixMode(GL_MODELVIEW);		// indicate we are specifying camera transformations
     glLoadIdentity ();     // make sure transformation is "zero'd"
     camera();
+    frame_number++;
     
     /* Allow particles to blend with each other. */
     glDepthMask(GL_TRUE);
@@ -114,6 +131,33 @@ void myDisplay(void) {
     
     simulator.simulate();
     
+    glReadPixels (0, 0, viewport.w, viewport.h, GL_RGB, GL_UNSIGNED_BYTE, g_video_memory_ptr);
+    
+    // save name will have number
+    sprintf (name, "video_frame_%03ld.raw", frame_number);
+    std::ofstream file;
+    file.open (name, std::ios::out | std::ios::binary);
+    // natural order is upside down so flip y
+    int bytes_in_row = viewport.w * 3;
+    int bytes_left = viewport.w * viewport.h * 3;
+    while (bytes_left > 0) {
+        int start_of_row = bytes_left - bytes_in_row;
+        // write the row
+        for (int i = 0; i < bytes_in_row; i++) {
+            file << g_video_memory_ptr[start_of_row + i];
+        }
+        bytes_left -= bytes_in_row;
+    }
+    file.close ();
+    // invoke ImageMagick to convert from .raw to .png
+    char command[2056];
+    sprintf (command, "convert -depth 8 -size %ix%i rgb:video_frame_%03ld.raw video_frame_%03ld.png", viewport.w, viewport.h, frame_number, frame_number);
+    printf ("%s\n", command);
+    system (command);
+    // delete the .raw
+    sprintf (command, "rm -f %s", name);
+    system (command);
+    
     glFlush();
     glutSwapBuffers();					// swap buffers (we earlier set double buffer)
     
@@ -121,18 +165,18 @@ void myDisplay(void) {
 }
 
 void setupParticles() {
-    for (int i = 0; i < 10; i++) {
-        for (int j = 0; j < 5; j++) {
+    for (int i = 5; i < 10; i++) {
+        for (int j = 0; j < 10; j++) {
             for (int k = 0; k < 10; k++) {
                 for (int l=0; l<2; l++){
-                Particle p(vec3(i+(rand() % 99) * 0.01,j+(rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(1,0,0),vec3(1,0,0),1,1);
-                Particle p2(vec3(i + (rand() % 99) * 0.01,j + (rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(1,0,0),vec3(1,0,0),1,1);
-                Particle p3(vec3(i+(rand() % 99) * 0.01,j+(rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(1,0,0),vec3(1,0,0),1,1);
-                Particle p4(vec3(i + (rand() % 99) * 0.01,j + (rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(1,0,0),vec3(1,0,0),1,1);
-                Particle p5(vec3(i+(rand() % 99) * 0.01,j+(rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(1,0,0),vec3(1,0,0),1,1);
-                Particle p6(vec3(i + (rand() % 99) * 0.01,j + (rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(1,0,0),vec3(1,0,0),1,1);
-                Particle p7(vec3(i+(rand() % 99) * 0.01,j+(rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(1,0,0),vec3(1,0,0),1,1);
-                Particle p8(vec3(i + (rand() % 99) * 0.01,j + (rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(1,0,0),vec3(1,0,0),1,1);
+                Particle p(vec3(i+(rand() % 99) * 0.01,j+(rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(0,0,1),vec3(0,0,1),1,1);
+                Particle p2(vec3(i + (rand() % 99) * 0.01,j + (rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(0,0,1),vec3(1,0,0),1,1);
+                Particle p3(vec3(i+(rand() % 99) * 0.01,j+(rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(0,0,1),vec3(0,0,1),1,1);
+                Particle p4(vec3(i + (rand() % 99) * 0.01,j + (rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(0,0,1),vec3(0,0,1),1,1);
+                Particle p5(vec3(i+(rand() % 99) * 0.01,j+(rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(0,0,1),vec3(0,0,1),1,1);
+                Particle p6(vec3(i + (rand() % 99) * 0.01,j + (rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(0,0,1),vec3(0,0,1),1,1);
+                Particle p7(vec3(i+(rand() % 99) * 0.01,j+(rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(0,0,1),vec3(0,0,1),1,1);
+                Particle p8(vec3(i + (rand() % 99) * 0.01,j + (rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(0,0,1),vec3(0,0,1),1,1);
                 particles.push_back(p);
                 particles.push_back(p2);
                 particles.push_back(p3);
@@ -217,7 +261,13 @@ int main(int argc, char *argv[]) {
     glutInitWindowPosition(0,0);
     glutCreateWindow(argv[0]);
     
-
+    // initialise timers
+    bool dump_video = true;
+    double video_timer = 0.0; // time video has been recording
+    double video_dump_timer = 0.0; // timer for next frame grab
+    double frame_time = 0.04; // 1/25 seconds of time
+    reserve_video_memory ();
+    
     // Currently grid size hard coded in,
     // later parsed from command line
     gridX = 10, gridY = 10, gridZ = 10;
@@ -242,15 +292,17 @@ int main(int argc, char *argv[]) {
 //    cout << "particle1 " << particles[0].pos.x << " " << particles[0].pos.y << " " << particles[0].pos.z << " " << particles[0].vel.x << " " << particles[0].vel.y << " " << particles[0].vel.z << "\n";
 //    cout << "particle2 " << particles[1].pos.x << " " << particles[1].pos.y << " " << particles[1].pos.z << " " << particles[1].vel.x << " " << particles[1].vel.y << " " << particles[1].vel.z << "\n"; 
 //    cout << "particle3 " << particles[2].pos.x << " " << particles[2].pos.y << " " << particles[2].pos.z << " " << particles[2].vel.x << " " << particles[2].vel.y << " " << particles[2].vel.z << "\n"; 
-//    cout << "particle4 " << particles[3].pos.x << " " << particles[3].pos.y << " " << particles[3].pos.z << " " << particles[3].vel.x << " " << particles[3].vel.y << " " << particles[3].vel.z << "\n"; 
-    
+//    cout << "particle4 " << particles[3].pos.x << " " << particles[3].pos.y << " " << particles[3].pos.z << " " << particles[3].vel.x << " " << particles[3].vel.y << " " << particles[3].vel.z << "\n";
 
 
     glutDisplayFunc(myDisplay);				// function to run when its time to draw something
     glutReshapeFunc(myReshape);				// function to run when the window gets resized
     glutIdleFunc(myDisplay);
+
     glutKeyboardFunc(keyboard);               // to do key things
     glutSpecialFunc(special);
+
+
 
     
     glutMainLoop();	// infinite loop that will keep drawing and resizing

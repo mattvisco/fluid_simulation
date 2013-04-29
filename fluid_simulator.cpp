@@ -32,7 +32,7 @@ void Simulator::simulate() {
         for (int j = 0; j < grid.ycells; j++) {
             for (int k = 0; k < grid.zcells; k++) {
                 
-                // PRESSURE COLOR MAP
+//                // PRESSURE COLOR MAP
 //                float pressure = grid.pressures[i][j][k];
 //                float r = 0,g = 0,b = 0;
 //                if (pressure < .1) {
