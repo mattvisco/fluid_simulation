@@ -103,10 +103,14 @@ void myDisplay(void) {
         glColor3f(particles[i].color.x,particles[i].color.y,particles[i].color.z);
         //glColor3f(0,0,1);
         glVertex3f(particles[i].pos.x, particles[i].pos.y, particles[i].pos.z);
-        outputfile << particles[i].pos.x << " " << particles[i].pos.y << " " << particles[i].pos.z << "\n";
+        //outputfile << particles[i].pos.x << " " << particles[i].pos.y << " " << particles[i].pos.z << "\n";
     }
-    outputfile << "FRAME\n";
+    //outputfile << "FRAME\n";
     glEnd();
+    
+    //output to image file
+    //unsigned char image[viewport.w * viewport.h * 3];
+    //glReadPixels(0, 0, viewport.w, viewport.h, GL_RGB, GL_UNSIGNED_BYTE, image);
     
     simulator.simulate();
     
@@ -133,10 +137,10 @@ void setupParticles() {
                 particles.push_back(p2);
                 particles.push_back(p3);
                 particles.push_back(p4);
-                particles.push_back(p5);
-                particles.push_back(p6);
-                particles.push_back(p7);
-                particles.push_back(p8);
+//                particles.push_back(p5);
+//                particles.push_back(p6);
+//                particles.push_back(p7);
+//                particles.push_back(p8);
                 }
             }
         }

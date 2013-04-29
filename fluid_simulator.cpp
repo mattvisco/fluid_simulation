@@ -9,7 +9,7 @@
 
 
 inline float sqr(float x) { return x*x; }
-
+float xMax = 0;
 
 Simulator::Simulator(vector<Particle>* particles, float gridX, float gridY, float gridZ, float gridH) {
     grid = Grid(gridX, gridY, gridZ, gridH);
@@ -25,29 +25,31 @@ void Simulator::simulate() {
     grid.extrapolateVelocities();
     grid.updateParticleVels();
     moveParticles();
-    
+
     
     // color particles based on cell pressure
     for (int i = 0; i < grid.xcells; i++) {
         for (int j = 0; j < grid.ycells; j++) {
             for (int k = 0; k < grid.zcells; k++) {
-                float pressure = grid.pressures[i][j][k];
-                float r = 0,g = 0,b = 0;
-                if (pressure < .1) {
-                    r = 1;
-                    g = 1;
-                    b = 1;
-                } else if (pressure < 31190) {
-                    b = pressure / 31190;
-                } else if (pressure < 62380) {
-                    g = pressure / 62380;
-                } else if (pressure < 93570) {
-                    r = pressure / 93570;
-                }
-                vector<Particle> parts = grid.particleCopies[i][j][k];
-                for (int s = 0; s < parts.size(); s++) {
-                    (*(parts[s].copy)).color = vec3(r,g,b);
-                }
+                
+                // PRESSURE COLOR MAP
+//                float pressure = grid.pressures[i][j][k];
+//                float r = 0,g = 0,b = 0;
+//                if (pressure < .1) {
+//                    r = 1;
+//                    g = 1;
+//                    b = 1;
+//                } else if (pressure < 31190) {
+//                    b = pressure / 31190;
+//                } else if (pressure < 62380) {
+//                    g = pressure / 62380;
+//                } else if (pressure < 93570) {
+//                    r = pressure / 93570;
+//                }
+//                vector<Particle> parts = grid.particleCopies[i][j][k];
+//                for (int s = 0; s < parts.size(); s++) {
+//                    (*(parts[s].copy)).color = vec3(r,g,b);
+//                }
             }
         }
     }

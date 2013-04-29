@@ -109,6 +109,7 @@ public:
     float avgNeighbLayers(vector<vec3>, int, int);
     bool hasl1Neighbor(vector<vec3>, int);
     vector<vec3> getvec3Neighbors(vec3);
+    void zeroBoundaries();
 };
 
 #endif 

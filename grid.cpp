@@ -393,11 +393,44 @@ float Grid::weightedAverage(vector<Particle> particles, vec3 pt, int AXIS) {
     return avg;
 }
 
+//zero the boundaries of the velocity grids
+void Grid::zeroBoundaries() {
+    //x
+    for (int j=0; j < ycells; j++) {
+        for (int k=0; k < zcells; k++) {
+            xvelocityOld[0][j][k] = 0.0f;
+            xvelocityOld[xcells][j][k] = 0.0f;
+            xvelocityNew[0][j][k] = 0.0f;
+            xvelocityNew[xcells][j][k] = 0.0f;
+        }
+    }
+    //y
+    for (int i=0; i < xcells; i++) {
+        for (int k=0; k < zcells; k++) {
+            yvelocityOld[i][0][k] = 0.0f;
+            yvelocityOld[i][ycells][k] = 0.0f;
+            yvelocityNew[i][0][k] = 0.0f;
+            yvelocityNew[i][ycells][k] = 0.0f;
+        } 
+    }
+    //z
+    for (int i=0; i < xcells; i++) {
+        for (int j=0; j < zcells; j++) {
+            zvelocityOld[i][j][0] = 0.0f;
+            zvelocityOld[i][j][zcells] = 0.0f;
+            zvelocityNew[i][j][0] = 0.0f;
+            zvelocityNew[i][j][zcells] = 0.0f;
+        }
+    }
+    
+}
+
 //Do all the non-advection steps of a standard water simulator on the grid.
 void Grid::computeNonAdvection() {
+    zeroBoundaries();
     computePressure();
     // x
-    for (int i=0; i < xcells+1; i++) {
+    for (int i=1; i < xcells; i++) {
         for (int j=0; j < ycells; j++) {
             for (int k=0; k < zcells; k++) {
                 xvelocityNew[i][j][k] = 0.0f;
@@ -407,7 +440,7 @@ void Grid::computeNonAdvection() {
     }
     // y
     for (int i=0; i < xcells; i++) {
-        for (int j=0; j < ycells+1; j++) {
+        for (int j=1; j < ycells; j++) {
             for (int k=0; k < zcells; k++) {
                 yvelocityNew[i][j][k] = 0.0f;
                 yvelocityNew[i][j][k] += computeGravityToAdd();
@@ -418,7 +451,7 @@ void Grid::computeNonAdvection() {
     // z
     for (int i=0; i < xcells; i++) {
         for (int j=0; j < ycells; j++) {
-            for (int k=0; k < zcells+1; k++) {
+            for (int k=1; k < zcells; k++) {
                 zvelocityNew[i][j][k] = 0.0f;
                 zvelocityNew[i][j][k] += KPRES*computePressureToAdd(i,j,k,Z_AXIS);
             }
