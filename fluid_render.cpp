@@ -38,22 +38,22 @@ float xrot,yrot,zrot,xtrans,ytrans,zoom;
 ofstream outputfile;
     int frame_number = 0;
 
-unsigned char* g_video_memory_start = NULL;
-unsigned char* g_video_memory_ptr = NULL;
-int g_video_seconds_total = 10;
-int g_video_fps = 25;
+//unsigned char* g_video_memory_start = NULL;
+//unsigned char* g_video_memory_ptr = NULL;
+//int g_video_seconds_total = 10;
+//int g_video_fps = 25;
 
 // write into a file
-char name[1024];
-
-
-
-
-void reserve_video_memory () {
-    // 480 MB at 800x800 resolution 230.4 MB at 640x480 resolution
-    g_video_memory_ptr = (unsigned char*)malloc (viewport.w * viewport.h * 3 * g_video_fps * g_video_seconds_total);
-    g_video_memory_start = g_video_memory_ptr;
-}
+//char name[1024];
+//
+//
+//
+//
+//void reserve_video_memory () {
+//    // 480 MB at 800x800 resolution 230.4 MB at 640x480 resolution
+//    g_video_memory_ptr = (unsigned char*)malloc (viewport.w * viewport.h * 3 * g_video_fps * g_video_seconds_total);
+//    g_video_memory_start = g_video_memory_ptr;
+//}
 //
 // Simple init function
 //
@@ -127,32 +127,32 @@ void myDisplay(void) {
     
     simulator.simulate();
     
-    glReadPixels (0, 0, viewport.w, viewport.h, GL_RGB, GL_UNSIGNED_BYTE, g_video_memory_ptr);
-    
-    // save name will have number
-    sprintf (name, "video_frame_%03ld.raw", frame_number);
-    std::ofstream file;
-    file.open (name, std::ios::out | std::ios::binary);
-    // natural order is upside down so flip y
-    int bytes_in_row = viewport.w * 3;
-    int bytes_left = viewport.w * viewport.h * 3;
-    while (bytes_left > 0) {
-        int start_of_row = bytes_left - bytes_in_row;
-        // write the row
-        for (int i = 0; i < bytes_in_row; i++) {
-            file << g_video_memory_ptr[start_of_row + i];
-        }
-        bytes_left -= bytes_in_row;
-    }
-    file.close ();
-    // invoke ImageMagick to convert from .raw to .png
-    char command[2056];
-    sprintf (command, "convert -depth 8 -size %ix%i rgb:video_frame_%03ld.raw video_frame_%03ld.png", viewport.w, viewport.h, frame_number, frame_number);
-    printf ("%s\n", command);
-    system (command);
-    // delete the .raw
-    sprintf (command, "rm -f %s", name);
-    system (command);
+//    glReadPixels (0, 0, viewport.w, viewport.h, GL_RGB, GL_UNSIGNED_BYTE, g_video_memory_ptr);
+//    
+//    // save name will have number
+//    sprintf (name, "video_frame_%03ld.raw", frame_number);
+//    std::ofstream file;
+//    file.open (name, std::ios::out | std::ios::binary);
+//    // natural order is upside down so flip y
+//    int bytes_in_row = viewport.w * 3;
+//    int bytes_left = viewport.w * viewport.h * 3;
+//    while (bytes_left > 0) {
+//        int start_of_row = bytes_left - bytes_in_row;
+//        // write the row
+//        for (int i = 0; i < bytes_in_row; i++) {
+//            file << g_video_memory_ptr[start_of_row + i];
+//        }
+//        bytes_left -= bytes_in_row;
+//    }
+//    file.close ();
+//    // invoke ImageMagick to convert from .raw to .png
+//    char command[2056];
+//    sprintf (command, "convert -depth 8 -size %ix%i rgb:video_frame_%03ld.raw video_frame_%03ld.png", viewport.w, viewport.h, frame_number, frame_number);
+//    printf ("%s\n", command);
+//    system (command);
+//    // delete the .raw
+//    sprintf (command, "rm -f %s", name);
+//    system (command);
     
     glFlush();
     glutSwapBuffers();					// swap buffers (we earlier set double buffer)
@@ -175,12 +175,12 @@ void setupParticles() {
                 Particle p8(vec3(i + (rand() % 99) * 0.01,j + (rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(0,0,1),vec3(0,0,1),1,1);
                 particles.push_back(p);
                 particles.push_back(p2);
-                particles.push_back(p3);
-                particles.push_back(p4);
-                particles.push_back(p5);
-                particles.push_back(p6);
-                particles.push_back(p7);
-                particles.push_back(p8);
+//                particles.push_back(p3);
+//                particles.push_back(p4);
+//                particles.push_back(p5);
+//                particles.push_back(p6);
+//                particles.push_back(p7);
+//                particles.push_back(p8);
                 }
             }
         }
@@ -262,7 +262,7 @@ int main(int argc, char *argv[]) {
     double video_timer = 0.0; // time video has been recording
     double video_dump_timer = 0.0; // timer for next frame grab
     double frame_time = 0.04; // 1/25 seconds of time
-    reserve_video_memory ();
+    //reserve_video_memory ();
     
     // Currently grid size hard coded in,
     // later parsed from command line
