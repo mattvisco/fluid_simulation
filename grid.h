@@ -37,10 +37,10 @@
 #define Y_AXIS 1
 #define Z_AXIS 2
 #define GRAVITY -9.81f // meters/second^2
-#define DENSITY 1000.0f // 
+#define DENSITY 1.0f // 
 
 #define KCFL 5 // constant for CFL condition for timestep
-#define DAMPENING 0.3f
+#define DAMPENING 0.5f
 #define NONE -1
 #define AIR 0
 #define FLUID 1
@@ -109,6 +109,7 @@ public:
     float avgNeighbLayers(vector<vec3>, int, int);
     bool hasl1Neighbor(vector<vec3>, int);
     vector<vec3> getvec3Neighbors(vec3);
+    void zeroBoundaries();
 };
 
 #endif 
