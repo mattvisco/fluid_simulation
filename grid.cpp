@@ -14,7 +14,6 @@ Grid::Grid(float xdim, float ydim, float zdim, float h) {
     Grid::ydim = ydim;
     Grid::zdim = zdim;
     Grid::h = h;
-    Grid:boundaryC=1.0;
     
     Grid::xcells = (int)xdim/h;
     Grid::ycells = (int)ydim/h;
@@ -370,20 +369,23 @@ float Grid::weightedAverage(vector<Particle> particles, vec3 pt, int AXIS) {
     float totalDst = 0.0f;
     for (int i = 0; i < particles.size(); i++) {
         float dst = distance(particles[i].pos, pt);
-        switch (AXIS) {
-            case X_AXIS:
-                avg += (float)particles[i].vel.x*dst;
-                break;
-            case Y_AXIS:
-                avg += (float)particles[i].vel.y*dst;
-                break;
-            case Z_AXIS:
-                avg += (float)particles[i].vel.z*dst;
-                break;
-            default:
-                break;
+        if (dst != 0) {
+            dst = 1.0/dst;
+            switch (AXIS) {
+                case X_AXIS:
+                    avg += (float)particles[i].vel.x*dst;
+                    break;
+                case Y_AXIS:
+                    avg += (float)particles[i].vel.y*dst;
+                    break;
+                case Z_AXIS:
+                    avg += (float)particles[i].vel.z*dst;
+                    break;
+                default:
+                    break;
+            }
+            totalDst += dst;
         }
-        totalDst += dst;
     }
     if (totalDst > 0.0f) {
         avg /= totalDst;

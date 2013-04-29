@@ -1,4 +1,4 @@
-    //
+//
 //  fluid.cpp
 //  
 //
@@ -35,6 +35,8 @@ float gridX, gridY, gridZ, cellSize;
 vector<Particle> particles;
 Simulator simulator;
 float xrot,yrot,zrot,xtrans,ytrans,zoom;
+
+ofstream outputfile;
 
 //
 // Simple init function
@@ -84,8 +86,7 @@ void myReshape(int w, int h) {
 //
 // function that does the actual drawing of stuff
 //
-void myDisplay(void) {
-    
+void myDisplay(void) {    
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear Color and Depth Buffers
     glMatrixMode(GL_MODELVIEW);		// indicate we are specifying camera transformations
     glLoadIdentity ();     // make sure transformation is "zero'd"
@@ -100,8 +101,11 @@ void myDisplay(void) {
     glBegin(GL_POINTS);
     for (int i = 0; i < particles.size(); i++) {
         glColor3f(particles[i].color.x,particles[i].color.y,particles[i].color.z);
+        //glColor3f(0,0,1);
         glVertex3f(particles[i].pos.x, particles[i].pos.y, particles[i].pos.z);
+        outputfile << particles[i].pos.x << " " << particles[i].pos.y << " " << particles[i].pos.z << "\n";
     }
+    outputfile << "FRAME\n";
     glEnd();
     
     simulator.simulate();
@@ -113,9 +117,10 @@ void myDisplay(void) {
 }
 
 void setupParticles() {
-    for (int i = 5; i < 10; i++) {
+    for (int i = 0; i < 10; i++) {
         for (int j = 0; j < 5; j++) {
             for (int k = 0; k < 10; k++) {
+                for (int l=0; l<2; l++){
                 Particle p(vec3(i+(rand() % 99) * 0.01,j+(rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(1,0,0),vec3(1,0,0),1,1);
                 Particle p2(vec3(i + (rand() % 99) * 0.01,j + (rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(1,0,0),vec3(1,0,0),1,1);
                 Particle p3(vec3(i+(rand() % 99) * 0.01,j+(rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(1,0,0),vec3(1,0,0),1,1);
@@ -126,12 +131,13 @@ void setupParticles() {
                 Particle p8(vec3(i + (rand() % 99) * 0.01,j + (rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(1,0,0),vec3(1,0,0),1,1);
                 particles.push_back(p);
                 particles.push_back(p2);
-//                particles.push_back(p3);
-//                particles.push_back(p4);
-//                particles.push_back(p5);
-//                particles.push_back(p6);
-//                particles.push_back(p7);
-//                particles.push_back(p8);
+                particles.push_back(p3);
+                particles.push_back(p4);
+                particles.push_back(p5);
+                particles.push_back(p6);
+                particles.push_back(p7);
+                particles.push_back(p8);
+                }
             }
         }
     }
@@ -189,6 +195,8 @@ void special(int key, int x, int y)
 }
  
 int main(int argc, char *argv[]) {
+    
+    outputfile.open ("output.txt");
 
     //This initializes glut
     glutInit(&argc, argv);
