@@ -78,16 +78,9 @@ void Simulator::pressureColorMap() {
 // move the particles using rk2 on the velocity field
 void Simulator::moveParticles() {
     for (int i = 0; i < (*particles).size(); i++) {
-       (*particles)[i].pos += grid.timeStep*(grid.getInterpolatedVelocity((*particles)[i].pos + grid.timeStep/2*(grid.getInterpolatedVelocity((*particles)[i].pos)+grid.getInterpolatedVelocityDifference((*particles)[i].pos)))+grid.getInterpolatedVelocityDifference((*particles)[i].pos + grid.timeStep/2*(grid.getInterpolatedVelocity((*particles)[i].pos)+grid.getInterpolatedVelocityDifference((*particles)[i].pos))));
         
-//        //the kind of sketchy way?
-//        if (grid.flip) {
-//            vec3 oldvel = (*particles)[i].vel - grid.getInterpolatedVelocityDifference((*particles)[i].pos);
-//            (*particles)[i].pos += grid.timeStep*(oldvel + grid.getInterpolatedVelocityDifference((*particles)[i].pos + (grid.timeStep/2*(*particles)[i].vel)));
-//        } else {
-//            (*particles)[i].pos += grid.timeStep*(grid.getInterpolatedVelocityDifference((*particles)[i].pos + (grid.timeStep/2*(*particles)[i].vel)));
-//        }
-        
+        // move particles through updated velocity field
+        (*particles)[i].pos += grid.timeStep*grid.getInterpolatedVelocityNew((*particles)[i].pos + grid.timeStep/2.0f*grid.getInterpolatedVelocityNew((*particles)[i].pos));
         
         //the sketchy way
         //(*particles)[i].pos += grid.timeStep*(*particles)[i].vel;

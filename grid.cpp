@@ -15,7 +15,7 @@ Grid::Grid(float xdim, float ydim, float zdim, float h) {
     Grid::zdim = zdim;
     Grid::h = h;
     
-    flip = true; // flip == true, Pic == false
+    flip = false; // flip == true, Pic == false
     
     Grid::xcells = (int)xdim/h;
     Grid::ycells = (int)ydim/h;
@@ -553,9 +553,9 @@ void Grid::computeNonAdvection() {
                 //                    xvelocityNew[i][j][k] = xvelocityOld[i][j][k];
                 //                }
                 xvelocityNew[i][j][k] += KPRES*computePressureToAdd(i,j,k,X_AXIS);
-                if (flip) {
-                    xvelocityNew[i][j][k] -= xvelocityOld[i][j][k];
-                }
+//                if (flip) {
+//                    xvelocityNew[i][j][k] -= xvelocityOld[i][j][k];
+//                }
             }
         }
     }
@@ -571,9 +571,9 @@ void Grid::computeNonAdvection() {
                 //                }
                 //yvelocityNew[i][j][k] += computeGravityToAdd();
                 yvelocityNew[i][j][k] += KPRES*computePressureToAdd(i,j,k,Y_AXIS);
-                if (flip) {
-                    yvelocityNew[i][j][k] -= yvelocityOld[i][j][k];
-                }
+//                if (flip) {
+//                    yvelocityNew[i][j][k] -= yvelocityOld[i][j][k];
+//                }
             }
         }
     }
@@ -587,9 +587,9 @@ void Grid::computeNonAdvection() {
                 //                    zvelocityNew[i][j][k] = zvelocityOld[i][j][k];
                 //                }
                 zvelocityNew[i][j][k] += KPRES*computePressureToAdd(i,j,k,Z_AXIS);
-                if (flip) {
-                    zvelocityNew[i][j][k] -= zvelocityOld[i][j][k];
-                }
+//                if (flip) {
+//                    zvelocityNew[i][j][k] -= zvelocityOld[i][j][k];
+//                }
             }
         }
     }
@@ -639,7 +639,7 @@ void Grid::computeTimeStep() {
     }
 }
 
-vec3 Grid::getInterpolatedVelocityDifference(vec3 pt) {
+vec3 Grid::getInterpolatedVelocityNew(vec3 pt) {
     vec3 velDif;
     velDif.x = getInterpolatedValue(pt.x/h, pt.y/h-0.5f, pt.z/h-0.5f, xvelocityNew);
     velDif.y = getInterpolatedValue(pt.x/h-0.5f, pt.y/h, pt.z/h-0.5f, yvelocityNew);
@@ -647,7 +647,7 @@ vec3 Grid::getInterpolatedVelocityDifference(vec3 pt) {
     return velDif;
 }
 
-vec3 Grid::getInterpolatedVelocity(vec3 pt) {
+vec3 Grid::getInterpolatedVelocityOld(vec3 pt) {
     vec3 vel;
     vel.x = getInterpolatedValue(pt.x/h, pt.y/h-0.5f, pt.z/h-0.5f, xvelocityOld);
     vel.y = getInterpolatedValue(pt.x/h-0.5f, pt.y/h, pt.z/h-0.5f, yvelocityOld);
@@ -703,9 +703,9 @@ float Grid::getInterpolatedValue(float x, float y, float z, vector<vector<vector
 void Grid::updateParticleVels() {
     for (int i = 0; i < (*particles).size(); i++) {
         if (flip) {
-            (*particles)[i].vel += getInterpolatedVelocityDifference((*particles)[i].pos);
+            (*particles)[i].vel += getInterpolatedVelocityNew((*particles)[i].pos) - getInterpolatedVelocityOld((*particles)[i].pos);
         } else {
-            (*particles)[i].vel = getInterpolatedVelocityDifference((*particles)[i].pos);
+            (*particles)[i].vel = getInterpolatedVelocityNew((*particles)[i].pos);
         }
     }
 }

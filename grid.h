@@ -97,8 +97,8 @@ public:
     float computeGravityToAdd();
     void computeTimeStep();
     float computePressureToAdd(int,int,int,int);
-    vec3 getInterpolatedVelocityDifference(vec3);
-    vec3 getInterpolatedVelocity(vec3);
+    vec3 getInterpolatedVelocityNew(vec3);
+    vec3 getInterpolatedVelocityOld(vec3);
     float getInterpolatedValue(float,float,float,vector<vector<vector<float> > >);
     void updateParticleVels();
     float divergence(vec3);
