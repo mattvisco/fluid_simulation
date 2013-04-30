@@ -37,11 +37,11 @@ void Simulator::checkDivergence() {
     for (int i = 0; i < grid.xcells; i++) {
         for (int j = 0; j < grid.ycells; j++) {
             for (int k = 0; k < grid.zcells; k++) {
-                //cout << "i,j,k pressure: " << grid.pressures[i][j][k] << "\n";
-                //cout << "i,j+1,k pressure: " << grid.pressures[i][j+1][k] << "\n";
-                
-                cout << grid.xvelocityNew[i+1][j][k] << " - " << grid.xvelocityNew[i][j][k] << " + " << grid.yvelocityNew[i][j+1][k] << " - " << grid.yvelocityNew[i][j][k] << " + " << grid.zvelocityNew[i][j][k+1] << " - " << grid.zvelocityNew[i][j][k] << " = ";
-                cout << grid.xvelocityNew[i+1][j][k]-grid.xvelocityNew[i][j][k] + grid.yvelocityNew[i][j+1][k]-grid.yvelocityNew[i][j][k] + grid.zvelocityNew[i][j][k+1]-grid.zvelocityNew[i][j][k] << "----- i: " << i << " j: " << j << " k: " << k << "\n\n";
+//                cout << "i,j,k pressure: " << grid.pressures[i][j][k] << "\n";
+//                //cout << "i,j+1,k pressure: " << grid.pressures[i][j+1][k] << "\n";
+//                
+//                cout << grid.xvelocityNew[i+1][j][k] << " - " << grid.xvelocityNew[i][j][k] << " + " << grid.yvelocityNew[i][j+1][k] << " - " << grid.yvelocityNew[i][j][k] << " + " << grid.zvelocityNew[i][j][k+1] << " - " << grid.zvelocityNew[i][j][k] << " = ";
+//                cout << grid.xvelocityNew[i+1][j][k]-grid.xvelocityNew[i][j][k] + grid.yvelocityNew[i][j+1][k]-grid.yvelocityNew[i][j][k] + grid.zvelocityNew[i][j][k+1]-grid.zvelocityNew[i][j][k] << "----- i: " << i << " j: " << j << " k: " << k << "\n\n";
             }
         }
     }
@@ -78,16 +78,9 @@ void Simulator::pressureColorMap() {
 // move the particles using rk2 on the velocity field
 void Simulator::moveParticles() {
     for (int i = 0; i < (*particles).size(); i++) {
-       //(*particles)[i].pos += grid.timeStep*(grid.getInterpolatedVelocity((*particles)[i].pos + grid.timeStep/2*(grid.getInterpolatedVelocity((*particles)[i].pos)+grid.getInterpolatedVelocityDifference((*particles)[i].pos)))+grid.getInterpolatedVelocityDifference((*particles)[i].pos + grid.timeStep/2*(grid.getInterpolatedVelocity((*particles)[i].pos)+grid.getInterpolatedVelocityDifference((*particles)[i].pos))));
         
-        //the kind of sketchy way?
-        if (grid.flip) {
-            vec3 oldvel = (*particles)[i].vel - grid.getInterpolatedVelocityDifference((*particles)[i].pos);
-            (*particles)[i].pos += grid.timeStep*(oldvel + grid.getInterpolatedVelocityDifference((*particles)[i].pos + (grid.timeStep/2*(*particles)[i].vel)));
-        } else {
-            (*particles)[i].pos += grid.timeStep*(grid.getInterpolatedVelocityDifference((*particles)[i].pos + (grid.timeStep/2*(*particles)[i].vel)));
-        }
-        
+        // move particles through updated velocity field
+        (*particles)[i].pos += grid.timeStep*grid.getInterpolatedVelocityNew((*particles)[i].pos + grid.timeStep/2.0f*grid.getInterpolatedVelocityNew((*particles)[i].pos));
         
         //the sketchy way
         //(*particles)[i].pos += grid.timeStep*(*particles)[i].vel;
