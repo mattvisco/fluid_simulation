@@ -633,9 +633,9 @@ float Grid::computePressureToAdd(int i, int j, int k, int AXIS) {
 
 void Grid::computeTimeStep() {
     if (maxVelocity > 0) {
-        timeStep = std::min(KCFL*h/maxVelocity,0.1f);
+        timeStep = std::min(KCFL*h/maxVelocity,DEFAULT);
     } else {
-        timeStep = 0.1;
+        timeStep = DEFAULT;
     }
 }
 
