@@ -340,10 +340,10 @@ private:
         grid.computeTimeStep();
         grid.computeNonAdvection();
         
-        for (int i=1; i < xcells; i++) {
-            for (int j=1; j < ycells; j++) {
-                for (int k=1; k < zcells; k++) {
-                    divergence = xvelocityNew[i][j][k]
+        for (int i=0; i < xcells; i++) {
+            for (int j=0; j < ycells; j++) {
+                for (int k=0; k < zcells; k++) {
+                    divergence = xvelocityNew[i][j][k] + 
                 }
             }
         }
@@ -354,7 +354,6 @@ private:
         for (int i=0; i <5000; i++) {
             simulator.simulate();
         }
-        TEST_ASSERT_MSG(1==0, "yo");
     }
     
 };

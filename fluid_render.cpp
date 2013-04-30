@@ -58,11 +58,47 @@ void initScene(){
     simulator = Simulator(&particles, gridX, gridY, gridZ, cellSize);
 }
 
+// Reserves memeory space for files
+void reserve_video_memory () {
+    // 480 MB at 800x800 resolution 230.4 MB at 640x480 resolution
+    g_video_memory_ptr = (unsigned char*)malloc (viewport.w * viewport.h * 3 * g_video_fps * g_video_seconds_total);
+    g_video_memory_start = g_video_memory_ptr;
+}
+
+// Dumps a frame into a png file
+void dumpFrames() {
+    // save name will have number
+    sprintf (name, "video_frame_%03ld.raw", frame_number);
+    std::ofstream file;
+    file.open (name, std::ios::out | std::ios::binary);
+    // natural order is upside down so flip y
+    int bytes_in_row = viewport.w * 3;
+    int bytes_left = viewport.w * viewport.h * 3;
+    while (bytes_left > 0) {
+        int start_of_row = bytes_left - bytes_in_row;
+        // write the row
+        for (int i = 0; i < bytes_in_row; i++) {
+            file << g_video_memory_ptr[start_of_row + i];
+        }
+        bytes_left -= bytes_in_row;
+    }
+    file.close ();
+    // invoke ImageMagick to convert from .raw to .png
+    char command[2056];
+    sprintf (command, "convert -depth 8 -size %ix%i rgb:video_frame_%03ld.raw video_frame_%03ld.png", viewport.w, viewport.h, frame_number, frame_number);
+    printf ("%s\n", command);
+    system (command);
+    // delete the .raw
+    sprintf (command, "rm -f %s", name);
+    system (command);
+    
+}
+
 //orient the camera
 void camera() {
-    glTranslatef(0.0+xtrans,0.0+ytrans,zoom-30.0);
-    glRotatef(xrot+25,1.0,0.0,0.0);
-    glRotatef(yrot-35,0.0,1.0,0.0);
+    glTranslatef(-5.0+xtrans,-5.0+ytrans,zoom-30.0);
+    glRotatef(xrot,1.0,0.0,0.0);
+    glRotatef(yrot,0.0,1.0,0.0);
     glRotatef(zrot,0.0,0.0,1.0);
 }
 
@@ -122,46 +158,12 @@ void myDisplay(void) {
     simulator.simulate();
     
     // Stores Frames in a pointer to convert to Image later
-//    glReadPixels (0, 0, viewport.w, viewport.h, GL_RGB, GL_UNSIGNED_BYTE, g_video_memory_ptr);
-//    dumpFrames();
+    glReadPixels (0, 0, viewport.w, viewport.h, GL_RGB, GL_UNSIGNED_BYTE, g_video_memory_ptr);
+    dumpFrames();
     
     glFlush();
     glutSwapBuffers();					// swap buffers (we earlier set double buffer)
     }
-
-void reserve_video_memory () {
-    // 480 MB at 800x800 resolution 230.4 MB at 640x480 resolution
-    g_video_memory_ptr = (unsigned char*)malloc (viewport.w * viewport.h * 3 * g_video_fps * g_video_seconds_total);
-    g_video_memory_start = g_video_memory_ptr;
-}
-
-void dumpFrames() {
-    // save name will have number
-    sprintf (name, "video_frame_%03ld.raw", frame_number);
-    std::ofstream file;
-    file.open (name, std::ios::out | std::ios::binary);
-    // natural order is upside down so flip y
-    int bytes_in_row = viewport.w * 3;
-    int bytes_left = viewport.w * viewport.h * 3;
-    while (bytes_left > 0) {
-        int start_of_row = bytes_left - bytes_in_row;
-        // write the row
-        for (int i = 0; i < bytes_in_row; i++) {
-            file << g_video_memory_ptr[start_of_row + i];
-        }
-        bytes_left -= bytes_in_row;
-    }
-    file.close ();
-    // invoke ImageMagick to convert from .raw to .png
-    char command[2056];
-    sprintf (command, "convert -depth 8 -size %ix%i rgb:video_frame_%03ld.raw video_frame_%03ld.png", viewport.w, viewport.h, frame_number, frame_number);
-    printf ("%s\n", command);
-    system (command);
-    // delete the .raw
-    sprintf (command, "rm -f %s", name);
-    system (command);
-
-}
 
 void setupParticles() {
     for (int i = 5; i < 10; i++) {
@@ -180,10 +182,10 @@ void setupParticles() {
                 particles.push_back(p2);
                 particles.push_back(p3);
                 particles.push_back(p4);
-                particles.push_back(p5);
-                particles.push_back(p6);
-                particles.push_back(p7);
-                particles.push_back(p8);
+//                particles.push_back(p5);
+//                particles.push_back(p6);
+//                particles.push_back(p7);
+//                particles.push_back(p8);
                 }
             }
         }
@@ -229,6 +231,7 @@ void special(int key, int x, int y)
                 ytrans+=.5;
             } else {
                 xrot+=5;
+                cout << xrot << "\n";
             }
             break;
         case GLUT_KEY_DOWN:
@@ -236,6 +239,7 @@ void special(int key, int x, int y)
                 ytrans-=.5;
             } else {
                 xrot-=5;
+                cout << xrot << "\n";
             }
             break;
     }
@@ -267,7 +271,7 @@ int main(int argc, char *argv[]) {
     
     setupParticles();
     
-    //reserve_video_memory ();
+    reserve_video_memory ();
     
     initScene();							// quick function to set up scene
     

@@ -336,7 +336,7 @@ void Grid::storeOldVelocities() {
     for (int i=0; i < xcells+1; i++) {
         for (int j=0; j < ycells; j++) {
             for (int k=0; k < zcells; k++) {
-                vec3 xpt(i-0.5f, (float)j, (float)k);
+                vec3 xpt(i, (float)j, (float)k);
                 vector<Particle> xneighbors = getNeighbors(xpt.x, xpt.y, xpt.z, h);
                 xvelocityOld[i][j][k] = weightedAverage(xneighbors, xpt, X_AXIS);
             }
@@ -346,7 +346,7 @@ void Grid::storeOldVelocities() {
 for (int i=0; i < xcells; i++) {
     for (int j=0; j < ycells+1; j++) {
         for (int k=0; k < zcells; k++) {
-            vec3 ypt((float)i, j-0.5f, (float)k);
+            vec3 ypt((float)i, j, (float)k);
             vector<Particle> yneighbors = getNeighbors(ypt.x, ypt.y, ypt.z, h);
             yvelocityOld[i][j][k] = weightedAverage(yneighbors, ypt, Y_AXIS);
             
@@ -357,7 +357,7 @@ for (int i=0; i < xcells; i++) {
 for (int i=0; i < xcells; i++) {
     for (int j=0; j < ycells; j++) {
         for (int k=0; k < zcells+1; k++) {
-            vec3 zpt((float)i, (float)j, k-0.5f);
+            vec3 zpt((float)i, (float)j, k); // took out the -0.5f, might want to put it back in
             vector<Particle> zneighbors = getNeighbors(zpt.x, zpt.y, zpt.z, h);
             zvelocityOld[i][j][k] = weightedAverage(zneighbors, zpt, Z_AXIS);
         }

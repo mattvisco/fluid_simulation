@@ -45,7 +45,7 @@ public:
     Simulator (vector<Particle>*,float,float,float,float);
     void simulate();
     void moveParticles();
-    void pressureColorMap()
+    void pressureColorMap();
 };
 
 #endif 
