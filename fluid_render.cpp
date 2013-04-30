@@ -38,17 +38,14 @@ float xrot,yrot,zrot,xtrans,ytrans,zoom;
 ofstream outputfile;
 
 int frame_number = 0;
-//unsigned char* g_video_memory_start = NULL;
-//unsigned char* g_video_memory_ptr = NULL;
-//int g_video_seconds_total = 10;
-//int g_video_fps = 25;
+unsigned char* g_video_memory_start = NULL;
+unsigned char* g_video_memory_ptr = NULL;
+int g_video_seconds_total = 10;
+int g_video_fps = 25;
 
 // write into a file
-//char name[1024];
-//
-//
-//
-//
+char name[1024];
+
 
 
 // Simple init function
@@ -269,6 +266,8 @@ int main(int argc, char *argv[]) {
     cellSize = 1;
     
     setupParticles();
+    
+    //reserve_video_memory ();
     
     initScene();							// quick function to set up scene
     

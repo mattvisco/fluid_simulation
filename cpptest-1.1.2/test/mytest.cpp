@@ -119,6 +119,7 @@ protected:
         grid.clearParticleCopies();
         particles.clear();
         particles2.clear();
+        particles3.clear();
     }
     
 private:
@@ -332,16 +333,21 @@ private:
         grid.xvelocityNew[1][1][1] = 1;
         grid.getInterpolatedVelocityDifference(vec3(1,0,0));
     }
-
-    //This shit fucks up cuz umfpack
-//    void testextrapolateVelocities() {
-//        grid.setParticles(&particles3);
-//        grid.setupParticleGrid(); // puts particles in correct grid cells
-//        grid.storeOldVelocities(); // stores the weighted averages of particles at grid points
-//        grid.computeTimeStep();
-//        grid.computeNonAdvection();
-//        grid.extrapolateVelocities();
-//    }
+    
+    void testDivergenceValue() {
+        grid.setupParticleGrid(); // puts particles in correct grid cells
+        grid.storeOldVelocities(); // stores the weighted averages of particles at grid points
+        grid.computeTimeStep();
+        grid.computeNonAdvection();
+        
+        for (int i=1; i < xcells; i++) {
+            for (int j=1; j < ycells; j++) {
+                for (int k=1; k < zcells; k++) {
+                    divergence = xvelocityNew[i][j][k]
+                }
+            }
+        }
+    }
     
     void testSimulate() {
         Simulator simulator(&particles, xdim, ydim, zdim, h);
