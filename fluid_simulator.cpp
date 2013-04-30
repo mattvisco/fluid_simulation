@@ -81,8 +81,8 @@ void Simulator::moveParticles() {
        //(*particles)[i].pos += grid.timeStep*(grid.getInterpolatedVelocity((*particles)[i].pos + grid.timeStep/2*(grid.getInterpolatedVelocity((*particles)[i].pos)+grid.getInterpolatedVelocityDifference((*particles)[i].pos)))+grid.getInterpolatedVelocityDifference((*particles)[i].pos + grid.timeStep/2*(grid.getInterpolatedVelocity((*particles)[i].pos)+grid.getInterpolatedVelocityDifference((*particles)[i].pos))));
         
         //the kind of sketchy way?
-        vec3 oldvel = (*particles)[i].vel - grid.getInterpolatedVelocityDifference((*particles)[i].pos);
         if (grid.flip) {
+            vec3 oldvel = (*particles)[i].vel - grid.getInterpolatedVelocityDifference((*particles)[i].pos);
             (*particles)[i].pos += grid.timeStep*(oldvel + grid.getInterpolatedVelocityDifference((*particles)[i].pos + (grid.timeStep/2*(*particles)[i].vel)));
         } else {
             (*particles)[i].pos += grid.timeStep*(grid.getInterpolatedVelocityDifference((*particles)[i].pos + (grid.timeStep/2*(*particles)[i].vel)));

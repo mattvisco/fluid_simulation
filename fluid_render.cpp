@@ -158,8 +158,8 @@ void myDisplay(void) {
     simulator.simulate();
     
     // Stores Frames in a pointer to convert to Image later
-//    glReadPixels (0, 0, viewport.w, viewport.h, GL_RGB, GL_UNSIGNED_BYTE, g_video_memory_ptr);
-//    dumpFrames();
+    glReadPixels (0, 0, viewport.w, viewport.h, GL_RGB, GL_UNSIGNED_BYTE, g_video_memory_ptr);
+    dumpFrames();
     
     glFlush();
     glutSwapBuffers();					// swap buffers (we earlier set double buffer)
@@ -269,7 +269,7 @@ int main(int argc, char *argv[]) {
     
     setupParticles();
     
-    //reserve_video_memory ();
+    reserve_video_memory ();
     
     initScene();							// quick function to set up scene
     
