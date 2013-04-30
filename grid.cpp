@@ -15,6 +15,8 @@ Grid::Grid(float xdim, float ydim, float zdim, float h) {
     Grid::zdim = zdim;
     Grid::h = h;
     
+    flip = false; // flip == true, Pic == false
+    
     Grid::xcells = (int)xdim/h;
     Grid::ycells = (int)ydim/h;
     Grid::zcells = (int)zdim/h;
@@ -429,12 +431,27 @@ void Grid::zeroBoundaries() {
 //Do all the non-advection steps of a standard water simulator on the grid.
 void Grid::computeNonAdvection() {
     zeroBoundaries();
+    
+    // y
+    for (int i=0; i < xcells; i++) {
+        for (int j=1; j < ycells; j++) {
+            for (int k=0; k < zcells; k++) {
+                yvelocityOld[i][j][k] += computeGravityToAdd();
+            }
+        }
+    }
+    
+    
     computePressure();
     // x
     for (int i=1; i < xcells; i++) {
         for (int j=0; j < ycells; j++) {
             for (int k=0; k < zcells; k++) {
-                xvelocityNew[i][j][k] = 0.0f;
+                if (flip) {
+                    xvelocityNew[i][j][k] = 0.0f;
+                } else {
+                    xvelocityNew[i][j][k] = xvelocityOld[i][j][k];
+                }
                 xvelocityNew[i][j][k] += KPRES*computePressureToAdd(i,j,k,X_AXIS);
             }
         }
@@ -443,8 +460,12 @@ void Grid::computeNonAdvection() {
     for (int i=0; i < xcells; i++) {
         for (int j=1; j < ycells; j++) {
             for (int k=0; k < zcells; k++) {
-                yvelocityNew[i][j][k] = 0.0f;
-                yvelocityNew[i][j][k] += computeGravityToAdd();
+                if (flip) {
+                    yvelocityNew[i][j][k] = 0.0f;
+                } else {
+                    yvelocityNew[i][j][k] = yvelocityOld[i][j][k];
+                }
+                //yvelocityNew[i][j][k] += computeGravityToAdd();
                 yvelocityNew[i][j][k] += KPRES*computePressureToAdd(i,j,k,Y_AXIS);
             }
         }
@@ -453,7 +474,11 @@ void Grid::computeNonAdvection() {
     for (int i=0; i < xcells; i++) {
         for (int j=0; j < ycells; j++) {
             for (int k=1; k < zcells; k++) {
-                zvelocityNew[i][j][k] = 0.0f;
+                if (flip) {
+                    zvelocityNew[i][j][k] = 0.0f;
+                } else {
+                    zvelocityNew[i][j][k] = zvelocityOld[i][j][k];
+                }
                 zvelocityNew[i][j][k] += KPRES*computePressureToAdd(i,j,k,Z_AXIS);
             }
         }
@@ -466,39 +491,28 @@ float Grid::computeGravityToAdd() {
 
 // compute the change in velocity due to pressure for a cell face
 float Grid::computePressureToAdd(int i, int j, int k, int AXIS) {
-    
     switch (AXIS) {
         case X_AXIS:
             if (i-1 < 0) {
                 return 0.0f;
-                //return -timeStep*1.0f/DENSITY*(pressures[i][j][k])/h;
             } else if (i >= xcells) {
                 return 0.0f;
-                //return -timeStep*1.0f/DENSITY*(-pressures[i-1][j][k])/h;
             } else {
                 return -timeStep*1.0f/DENSITY*(pressures[i][j][k]-pressures[i-1][j][k])/h;
             }
         case Y_AXIS:
             if (j-1 < 0) {
                 return 0.0f;
-                //return -timeStep*1.0f/DENSITY*(pressures[i][j][k])/h;
             } else if (j >= ycells) {
                 return 0.0f;
-                //return -timeStep*1.0f/DENSITY*(-pressures[i][j-1][k])/h;
             } else {
-                if (j == 0 || j == 1 || j == 2) {
-                    //cout << "yvelocityOld[" <<i << "][" << j+1 << "][" << k << "] --> " << yvelocityOld[i][j+1][k] << " yvelocityOld[" << i << "][" << j << "][" << k << "]" << yvelocityOld[i][j][k] << "\n";
-                    //cout << "pressures[" <<i << "][" << j << "][" << k << "] - " << "pressures[" << i << "][" << j-1 << "][" << k << "]" << pressures[i][j][k] << " - " << pressures[i][j-1][k] << "\n \n";
-                }
                 return -timeStep*1.0f/DENSITY*(pressures[i][j][k]-pressures[i][j-1][k])/h;
             }
         case Z_AXIS:
             if (k-1 < 0) {
                 return 0.0f;
-                //return -timeStep*1.0f/DENSITY*(pressures[i][j][k])/h;
             } else if (k >= zcells) {
                 return 0.0f;
-                //return -timeStep*1.0f/DENSITY*(-pressures[i][j][k-1])/h;
             } else {
                 return -timeStep*1.0f/DENSITY*(pressures[i][j][k]-pressures[i][j][k-1])/h;
             }
@@ -578,7 +592,11 @@ float Grid::getInterpolatedValue(float x, float y, float z, vector<vector<vector
 
 void Grid::updateParticleVels() {
     for (int i = 0; i < (*particles).size(); i++) {
-        (*particles)[i].vel += getInterpolatedVelocityDifference((*particles)[i].pos);
+        if (flip) {
+            (*particles)[i].vel += getInterpolatedVelocityDifference((*particles)[i].pos);
+        } else {
+            (*particles)[i].vel = getInterpolatedVelocityDifference((*particles)[i].pos);
+        }
     }
 }
 

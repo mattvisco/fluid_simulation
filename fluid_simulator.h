@@ -46,6 +46,7 @@ public:
     void simulate();
     void moveParticles();
     void pressureColorMap();
+    void checkDivergence();
 };
 
 #endif 

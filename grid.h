@@ -67,6 +67,7 @@ public:
     int zcells;
     float timeStep; // in milliseconds ?
     float maxVelocity;
+    bool flip;
     vector<Particle>* particles;
     vector<vector<vector<float> > > pressures; 
     vector<vector<vector<float> > > xvelocityOld; 

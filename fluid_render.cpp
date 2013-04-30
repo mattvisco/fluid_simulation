@@ -97,7 +97,7 @@ void dumpFrames() {
 //orient the camera
 void camera() {
     glTranslatef(-5.0+xtrans,-5.0+ytrans,zoom-30.0);
-    glRotatef(xrot,1.0,0.0,0.0);
+    glRotatef(xrot - 10,1.0,0.0,0.0);
     glRotatef(yrot,0.0,1.0,0.0);
     glRotatef(zrot,0.0,0.0,1.0);
 }
@@ -158,8 +158,8 @@ void myDisplay(void) {
     simulator.simulate();
     
     // Stores Frames in a pointer to convert to Image later
-    glReadPixels (0, 0, viewport.w, viewport.h, GL_RGB, GL_UNSIGNED_BYTE, g_video_memory_ptr);
-    dumpFrames();
+    //glReadPixels (0, 0, viewport.w, viewport.h, GL_RGB, GL_UNSIGNED_BYTE, g_video_memory_ptr);
+    //dumpFrames();
     
     glFlush();
     glutSwapBuffers();					// swap buffers (we earlier set double buffer)
@@ -180,8 +180,8 @@ void setupParticles() {
                 Particle p8(vec3(i + (rand() % 99) * 0.01,j + (rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(0,0,1),vec3(0,0,1),1,1);
                 particles.push_back(p);
                 particles.push_back(p2);
-                particles.push_back(p3);
-                particles.push_back(p4);
+//                particles.push_back(p3);
+//                particles.push_back(p4);
 //                particles.push_back(p5);
 //                particles.push_back(p6);
 //                particles.push_back(p7);
@@ -231,7 +231,6 @@ void special(int key, int x, int y)
                 ytrans+=.5;
             } else {
                 xrot+=5;
-                cout << xrot << "\n";
             }
             break;
         case GLUT_KEY_DOWN:
@@ -239,7 +238,6 @@ void special(int key, int x, int y)
                 ytrans-=.5;
             } else {
                 xrot-=5;
-                cout << xrot << "\n";
             }
             break;
     }
@@ -271,7 +269,7 @@ int main(int argc, char *argv[]) {
     
     setupParticles();
     
-    reserve_video_memory ();
+    //reserve_video_memory ();
     
     initScene();							// quick function to set up scene
     

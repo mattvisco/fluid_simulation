@@ -22,11 +22,29 @@ void Simulator::simulate() {
     grid.storeOldVelocities(); // stores the weighted averages of particles at grid points
     grid.computeTimeStep();
     grid.computeNonAdvection();
-    //grid.extrapolateVelocities();
+    checkDivergence();
+    grid.extrapolateVelocities();
+//    cout << "**********";
+//    checkDivergence();
     grid.updateParticleVels();
     moveParticles();
 
     //pressureColorMap(); // Testing purposes only
+}
+
+// Testing purposes only
+void Simulator::checkDivergence() {
+    for (int i = 0; i < grid.xcells; i++) {
+        for (int j = 0; j < grid.ycells; j++) {
+            for (int k = 0; k < grid.zcells; k++) {
+                //cout << "i,j,k pressure: " << grid.pressures[i][j][k] << "\n";
+                //cout << "i,j+1,k pressure: " << grid.pressures[i][j+1][k] << "\n";
+                
+                cout << grid.xvelocityNew[i+1][j][k] << " - " << grid.xvelocityNew[i][j][k] << " + " << grid.yvelocityNew[i][j+1][k] << " - " << grid.yvelocityNew[i][j][k] << " + " << grid.zvelocityNew[i][j][k+1] << " - " << grid.zvelocityNew[i][j][k] << " = ";
+                cout << grid.xvelocityNew[i+1][j][k]-grid.xvelocityNew[i][j][k] + grid.yvelocityNew[i][j+1][k]-grid.yvelocityNew[i][j][k] + grid.zvelocityNew[i][j][k+1]-grid.zvelocityNew[i][j][k] << "----- i: " << i << " j: " << j << " k: " << k << "\n\n";
+            }
+        }
+    }
 }
 
 // Colors particles based on cell pressure
@@ -64,7 +82,12 @@ void Simulator::moveParticles() {
         
         //the kind of sketchy way?
         vec3 oldvel = (*particles)[i].vel - grid.getInterpolatedVelocityDifference((*particles)[i].pos);
-        (*particles)[i].pos += grid.timeStep*(oldvel + grid.getInterpolatedVelocityDifference((*particles)[i].pos + (grid.timeStep/2*(*particles)[i].vel)));
+        if (grid.flip) {
+            (*particles)[i].pos += grid.timeStep*(oldvel + grid.getInterpolatedVelocityDifference((*particles)[i].pos + (grid.timeStep/2*(*particles)[i].vel)));
+        } else {
+            (*particles)[i].pos += grid.timeStep*(grid.getInterpolatedVelocityDifference((*particles)[i].pos + (grid.timeStep/2*(*particles)[i].vel)));
+        }
+        
         
         //the sketchy way
         //(*particles)[i].pos += grid.timeStep*(*particles)[i].vel;
