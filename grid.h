@@ -111,6 +111,8 @@ public:
     bool hasl1Neighbor(vector<vec3>, int);
     vector<vec3> getvec3Neighbors(vec3);
     void zeroBoundaries();
+    void computePressureNew();
+    float divergenceNew(vec3);
 };
 
 #endif 
