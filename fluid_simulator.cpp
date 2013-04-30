@@ -37,11 +37,11 @@ void Simulator::checkDivergence() {
     for (int i = 0; i < grid.xcells; i++) {
         for (int j = 0; j < grid.ycells; j++) {
             for (int k = 0; k < grid.zcells; k++) {
-                //cout << "i,j,k pressure: " << grid.pressures[i][j][k] << "\n";
-                //cout << "i,j+1,k pressure: " << grid.pressures[i][j+1][k] << "\n";
-                
-                cout << grid.xvelocityNew[i+1][j][k] << " - " << grid.xvelocityNew[i][j][k] << " + " << grid.yvelocityNew[i][j+1][k] << " - " << grid.yvelocityNew[i][j][k] << " + " << grid.zvelocityNew[i][j][k+1] << " - " << grid.zvelocityNew[i][j][k] << " = ";
-                cout << grid.xvelocityNew[i+1][j][k]-grid.xvelocityNew[i][j][k] + grid.yvelocityNew[i][j+1][k]-grid.yvelocityNew[i][j][k] + grid.zvelocityNew[i][j][k+1]-grid.zvelocityNew[i][j][k] << "----- i: " << i << " j: " << j << " k: " << k << "\n\n";
+//                cout << "i,j,k pressure: " << grid.pressures[i][j][k] << "\n";
+//                //cout << "i,j+1,k pressure: " << grid.pressures[i][j+1][k] << "\n";
+//                
+//                cout << grid.xvelocityNew[i+1][j][k] << " - " << grid.xvelocityNew[i][j][k] << " + " << grid.yvelocityNew[i][j+1][k] << " - " << grid.yvelocityNew[i][j][k] << " + " << grid.zvelocityNew[i][j][k+1] << " - " << grid.zvelocityNew[i][j][k] << " = ";
+//                cout << grid.xvelocityNew[i+1][j][k]-grid.xvelocityNew[i][j][k] + grid.yvelocityNew[i][j+1][k]-grid.yvelocityNew[i][j][k] + grid.zvelocityNew[i][j][k+1]-grid.zvelocityNew[i][j][k] << "----- i: " << i << " j: " << j << " k: " << k << "\n\n";
             }
         }
     }

@@ -40,12 +40,12 @@
 #define DENSITY 1.0f // 
 
 #define KCFL 5 // constant for CFL condition for timestep
-#define DAMPENING 0.5f
+#define DAMPENING 0.7f
 #define NONE -1
 #define AIR 0
 #define FLUID 1
 #define SOLID 2
-#define PATM 3
+#define PATM 0
 #define KPRES 1
 
 

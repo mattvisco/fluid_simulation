@@ -158,30 +158,30 @@ void myDisplay(void) {
     simulator.simulate();
     
     // Stores Frames in a pointer to convert to Image later
-    //glReadPixels (0, 0, viewport.w, viewport.h, GL_RGB, GL_UNSIGNED_BYTE, g_video_memory_ptr);
-    //dumpFrames();
+//    glReadPixels (0, 0, viewport.w, viewport.h, GL_RGB, GL_UNSIGNED_BYTE, g_video_memory_ptr);
+//    dumpFrames();
     
     glFlush();
     glutSwapBuffers();					// swap buffers (we earlier set double buffer)
     }
 
 void setupParticles() {
-    for (int i = 5; i < 10; i++) {
-        for (int j = 0; j < 10; j++) {
+    for (int i = 3; i < 6; i++) {
+        for (int j = 5; j < 10; j++) {
             for (int k = 0; k < 10; k++) {
                 for (int l=0; l<2; l++){
-                Particle p(vec3(i+(rand() % 99) * 0.01,j+(rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(0,0,1),vec3(0,0,1),1,1);
-                Particle p2(vec3(i + (rand() % 99) * 0.01,j + (rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(0,0,1),vec3(1,0,0),1,1);
-                Particle p3(vec3(i+(rand() % 99) * 0.01,j+(rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(0,0,1),vec3(0,0,1),1,1);
-                Particle p4(vec3(i + (rand() % 99) * 0.01,j + (rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(0,0,1),vec3(0,0,1),1,1);
-                Particle p5(vec3(i+(rand() % 99) * 0.01,j+(rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(0,0,1),vec3(0,0,1),1,1);
+                Particle p(vec3(i+(rand() % 99) * 0.01,j+(rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(-2,0,0),vec3(0,0,1),vec3(0,0,1),1,1);
+                Particle p2(vec3(i + (rand() % 99) * 0.01,j + (rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(-2,0,0),vec3(0,0,1),vec3(1,0,0),1,1);
+                Particle p3(vec3(i+(rand() % 99) * 0.01,j+(rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(-2,0,0),vec3(0,0,1),vec3(0,0,1),1,1);
+                Particle p4(vec3(i + (rand() % 99) * 0.01,j + (rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(-2,0,0),vec3(0,0,1),vec3(0,0,1),1,1);
+                Particle p5(vec3(i+(rand() % 99) * 0.01,j+(rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(-2,0,0),vec3(0,0,1),vec3(0,0,1),1,1);
                 Particle p6(vec3(i + (rand() % 99) * 0.01,j + (rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(0,0,1),vec3(0,0,1),1,1);
                 Particle p7(vec3(i+(rand() % 99) * 0.01,j+(rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(0,0,1),vec3(0,0,1),1,1);
                 Particle p8(vec3(i + (rand() % 99) * 0.01,j + (rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(0,0,1),vec3(0,0,1),1,1);
                 particles.push_back(p);
                 particles.push_back(p2);
-//                particles.push_back(p3);
-//                particles.push_back(p4);
+                particles.push_back(p3);
+                particles.push_back(p4);
 //                particles.push_back(p5);
 //                particles.push_back(p6);
 //                particles.push_back(p7);
