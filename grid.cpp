@@ -15,7 +15,7 @@ Grid::Grid(float xdim, float ydim, float zdim, float h) {
     Grid::zdim = zdim;
     Grid::h = h;
     
-    flip = false; // flip == true, Pic == false
+    flip = true; // flip == true, Pic == false
     
     Grid::xcells = (int)xdim/h;
     Grid::ycells = (int)ydim/h;
@@ -539,6 +539,8 @@ void Grid::computeNonAdvection() {
             }
         }
     }
+    
+    //extrapolateVelocities();
     
     //computePressure();
     computePressureNew();
