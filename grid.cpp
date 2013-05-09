@@ -11,11 +11,14 @@
 
 Grid::Grid(float xdim, float ydim, float zdim, float h) {
     Grid::xdim = xdim;
+    cout << xdim;
     Grid::ydim = ydim;
+    cout << ydim;
     Grid::zdim = zdim;
+    cout << zdim;
     Grid::h = h;
     
-    flip = true; // flip == true, Pic == false
+    flip = false; // flip == true, Pic == false
     
     Grid::xcells = (int)xdim/h;
     Grid::ycells = (int)ydim/h;
@@ -540,7 +543,7 @@ void Grid::computeNonAdvection() {
         }
     }
     
-    //extrapolateVelocities();
+    extrapolateVelocities();
     
     //computePressure();
     computePressureNew();

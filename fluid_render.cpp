@@ -96,7 +96,7 @@ void dumpFrames() {
 
 //orient the camera
 void camera() {
-    glTranslatef(-5.0+xtrans,-5.0+ytrans,zoom-30.0);
+    glTranslatef(-11.5+xtrans,-17.5+ytrans,zoom-70.0);
     glRotatef(xrot - 10,1.0,0.0,0.0);
     glRotatef(yrot,0.0,1.0,0.0);
     glRotatef(zrot,0.0,0.0,1.0);
@@ -149,8 +149,15 @@ void myDisplay(void) {
         glColor3f(particles[i].color.x,particles[i].color.y,particles[i].color.z);
         //glColor3f(0,0,1);
         glVertex3f(particles[i].pos.x, particles[i].pos.y, particles[i].pos.z);
-        //outputfile << particles[i].pos.x << " " << particles[i].pos.y << " " << particles[i].pos.z << "\n";
+//        outputfile << "sphere" << i << " = cmds.polySphere(ax=(0,0,0),r=3)\n";
+//        //outputfile << particles[i].pos.x << " " << particles[i].pos.y << " " << particles[i].pos.z << "\n";
+//        outputfile << "cmds.polyMoveVertex(sphere" << i << ", t=(" << particles[i].pos.x*10 << "," << particles[i].pos.y*10 << "," << particles[i].pos.z*10 << "))\n";
     }
+//    outputfile << "mm.eval('renderWindowRender redoPreviousRender renderView')\n";
+//    outputfile << "cmds.renderWindowEditor(editor, e=True, writeImage='image" << frame_number << "')\n";
+//    for (int s = 0; s < particles.size(); s++) {
+//        outputfile << "cmds.delete(sphere" << s << ")\n";
+//    }
     //outputfile << "FRAME\n";
     glEnd();
     
@@ -158,8 +165,8 @@ void myDisplay(void) {
     simulator.simulate();
     
     // Stores Frames in a pointer to convert to Image later
-    glReadPixels (0, 0, viewport.w, viewport.h, GL_RGB, GL_UNSIGNED_BYTE, g_video_memory_ptr);
-    dumpFrames();
+//    glReadPixels (0, 0, viewport.w, viewport.h, GL_RGB, GL_UNSIGNED_BYTE, g_video_memory_ptr);
+//    dumpFrames();
 
     
     glFlush();
@@ -170,7 +177,6 @@ void setupParticles() {
     for (int i = 5; i < 10; i++) {
         for (int j = 0; j < 10; j++) {
             for (int k = 0; k < 10; k++) {
-                for (int l=0; l<2; l++){
                 Particle p(vec3(i+(rand() % 99) * 0.01,j+(rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(0,0,1),vec3(0,0,1),1,1);
                 Particle p2(vec3(i + (rand() % 99) * 0.01,j + (rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(0,0,1),vec3(1,0,0),1,1);
                 Particle p3(vec3(i+(rand() % 99) * 0.01,j+(rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(0,0,1),vec3(0,0,1),1,1);
@@ -183,11 +189,10 @@ void setupParticles() {
                 particles.push_back(p2);
                 particles.push_back(p3);
                 particles.push_back(p4);
-                particles.push_back(p5);
-                particles.push_back(p6);
+//                particles.push_back(p5);
+//                particles.push_back(p6);
 //                particles.push_back(p7);
 //                particles.push_back(p8);
-                }
             }
         }
     }
@@ -198,9 +203,11 @@ void keyboard(unsigned char key, int x, int y) {
     switch (key) {
         case '=':
             zoom+=1;
+            cout << "zoom" << zoom << "\n";
             break;
         case '-':
             zoom-=1;
+            cout << "zoom" << zoom << "\n";
             break;
     }
 }
@@ -216,6 +223,7 @@ void special(int key, int x, int y)
         case GLUT_KEY_RIGHT:
             if (mod == GLUT_ACTIVE_SHIFT) {
                 xtrans+=.5;
+                cout << "x" << xtrans << "\n";
             } else {
                 yrot+=5;
             }
@@ -223,6 +231,8 @@ void special(int key, int x, int y)
         case GLUT_KEY_LEFT:
             if (mod == GLUT_ACTIVE_SHIFT) {
                 xtrans-=.5;
+                cout << "x" << xtrans << "\n";
+
             } else {
                 yrot-=5;
             }
@@ -230,6 +240,8 @@ void special(int key, int x, int y)
         case GLUT_KEY_UP:
             if (mod == GLUT_ACTIVE_SHIFT) {
                 ytrans+=.5;
+                cout << "y" << ytrans << "\n";
+
             } else {
                 xrot+=5;
             }
@@ -237,6 +249,7 @@ void special(int key, int x, int y)
         case GLUT_KEY_DOWN:
             if (mod == GLUT_ACTIVE_SHIFT) {
                 ytrans-=.5;
+                cout << "y" << ytrans << "\n";
             } else {
                 xrot-=5;
             }
@@ -246,7 +259,11 @@ void special(int key, int x, int y)
  
 int main(int argc, char *argv[]) {
     
-    outputfile.open ("output.txt");
+//    outputfile.open ("/Users/mattvisco/Documents/School/CS184/fluid_simulation/PIC_Column.py");
+//    outputfile << "import maya.cmds as cmds\n";
+//    outputfile << "import maya.mel as mm\n";
+//    outputfile << "import os\n";
+//    outputfile << "os.chdir('/Users/mattvisco/Documents/School/CS184/fluid_simulation/renderings/PIC_Column')\n";
 
     //This initializes glut
     glutInit(&argc, argv);
@@ -270,7 +287,7 @@ int main(int argc, char *argv[]) {
     
     setupParticles();
     
-    reserve_video_memory ();
+    //reserve_video_memory ();
     
     initScene();							// quick function to set up scene
     

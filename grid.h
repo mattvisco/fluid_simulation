@@ -37,7 +37,7 @@
 #define Y_AXIS 1
 #define Z_AXIS 2
 #define GRAVITY -9.81f // meters/second^2
-#define DENSITY 1.0f // 
+#define DENSITY 1.0f //
 
 #define KCFL 5 // constant for CFL condition for timestep
 #define DEFAULT 1.0f/10.0f
@@ -46,7 +46,7 @@
 #define AIR 0
 #define FLUID 1
 #define SOLID 2
-#define PATM 3
+#define PATM 1
 #define KPRES 1
 
 
