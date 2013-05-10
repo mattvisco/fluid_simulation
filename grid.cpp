@@ -301,7 +301,11 @@ void Grid::computePressureNew(){
     int size=fluids.size();
     double x[size];
     double b[size];
-    double a[size][size];
+    vector<vector<double > > a;
+    a.resize(size);
+    for (int i = 0; i < size; i++) {
+        a[i].resize(size);
+    }
     
     // zero out x
     for (int i = 0; i < size; i++) {
