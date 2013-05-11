@@ -146,6 +146,7 @@ bool Grid::isNeighbor(vec3 p1, vec3 p2) {
     return left || right || top || bottom || back || front;
 }
 
+
 int Grid::getNonSolidNeighbors(vec3 p) {
     int i = (int)p.x;
     int j = (int)p.y;
