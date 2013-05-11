@@ -42,6 +42,7 @@ unsigned char* g_video_memory_start = NULL;
 unsigned char* g_video_memory_ptr = NULL;
 int g_video_seconds_total = 10;
 int g_video_fps = 25;
+float ballrad = 0.3;
 
 // write into a file
 char name[1024];
@@ -50,9 +51,44 @@ char name[1024];
 
 // Simple init function
 //
+const GLfloat light_ambient[]  = { 0.0f, 0.0f, 0.0f, 1.0f };
+const GLfloat light_diffuse[]  = { 1.0f, 1.0f, 1.0f, 1.0f };
+const GLfloat light_specular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+const GLfloat light_position[] = { 10.0f, 20.0f, 10.0f, 0.0f }; 
+
+const GLfloat mat_ambient[]    = { 0.7f, 0.7f, 0.7f, 1.0f };
+const GLfloat mat_diffuse[]    = { 0.8f, 0.8f, 0.8f, 1.0f };
+const GLfloat mat_specular[]   = { 1.0f, 1.0f, 1.0f, 1.0f };
+const GLfloat high_shininess[] = { 100.0f }; 
+
 void initScene(){
+    
     glClearColor (0.0, 0.0, 0.0, 0.0);
     glClearDepth(1.0);
+    
+    glEnable (GL_BLEND);
+    glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
+//    glEnable(GL_CULL_FACE);
+//    glCullFace(GL_BACK); 
+//    
+    //glEnable(GL_DEPTH_TEST);
+//    glDepthFunc(GL_LESS);
+    
+    glEnable(GL_LIGHT0);
+    glEnable(GL_NORMALIZE);
+    glEnable(GL_COLOR_MATERIAL);
+    glEnable(GL_LIGHTING); 
+    
+    glLightfv(GL_LIGHT0, GL_AMBIENT,  light_ambient);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE,  light_diffuse);
+//    glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position); 
+    
+    glMaterialfv(GL_FRONT, GL_AMBIENT,   mat_ambient);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE,   mat_diffuse);
+    //glMaterialfv(GL_FRONT, GL_SPECULAR,  mat_specular);
+    
     //Simulator simulator(particles);
     //Particle h;
     simulator = Simulator(&particles, gridX, gridY, gridZ, cellSize);
@@ -139,28 +175,49 @@ void myDisplay(void) {
     frame_number++;
     
     /* Allow particles to blend with each other. */
-    glDepthMask(GL_TRUE);
+    //glDepthMask(GL_TRUE);
     
-    glPointSize(8.0);
+    //glPointSize(8.0);
+    //glColor3f(0,0,1);
     
-    // Render all particles
-    glBegin(GL_POINTS);
-    for (int i = 0; i < particles.size(); i++) {
-        glColor3f(particles[i].color.x,particles[i].color.y,particles[i].color.z);
-        //glColor3f(0,0,1);
-        glVertex3f(particles[i].pos.x, particles[i].pos.y, particles[i].pos.z);
-//        outputfile << "sphere" << i << " = cmds.polySphere(ax=(0,0,0),r=3)\n";
-//        //outputfile << particles[i].pos.x << " " << particles[i].pos.y << " " << particles[i].pos.z << "\n";
-//        outputfile << "cmds.polyMoveVertex(sphere" << i << ", t=(" << particles[i].pos.x*10 << "," << particles[i].pos.y*10 << "," << particles[i].pos.z*10 << "))\n";
-    }
-//    outputfile << "mm.eval('renderWindowRender redoPreviousRender renderView')\n";
-//    outputfile << "cmds.renderWindowEditor(editor, e=True, writeImage='image" << frame_number << "')\n";
-//    for (int s = 0; s < particles.size(); s++) {
-//        outputfile << "cmds.delete(sphere" << s << ")\n";
-//    }
-    //outputfile << "FRAME\n";
+    //draw the box
+    glColor4f(1,1,1,1);
+    glBegin(GL_LINE_LOOP);
+    glVertex3f(0-ballrad,0-ballrad,0-ballrad);
+    glVertex3f(gridX+ballrad,0-ballrad,0-ballrad);
+    glVertex3f(gridX+ballrad,gridY+ballrad,0-ballrad);
+    glVertex3f(0-ballrad,gridY+ballrad,0-ballrad);
+    
+    glVertex3f(0-ballrad,0-ballrad,0-ballrad);
+    glVertex3f(0-ballrad,0-ballrad,gridZ+ballrad);
+    glVertex3f(0-ballrad,gridY+ballrad,gridZ+ballrad);
+    glVertex3f(0-ballrad,gridY+ballrad,0-ballrad);
+    glVertex3f(0-ballrad,0-ballrad,0-ballrad);
+    
+    glVertex3f(0-ballrad,0-ballrad,gridZ+ballrad);
+    glVertex3f(gridX+ballrad,0-ballrad,gridZ+ballrad);
+    glVertex3f(gridX+ballrad,gridY+ballrad,gridZ+ballrad);
+    glVertex3f(0-ballrad,gridY+ballrad,gridZ+ballrad);
+    glVertex3f(0-ballrad,0-ballrad,gridZ+ballrad);
     glEnd();
-    
+    glBegin(GL_LINES);
+    glVertex3f(gridX+ballrad,0-ballrad,0-ballrad);
+    glVertex3f(gridX+ballrad,0-ballrad,gridZ+ballrad);
+    glVertex3f(gridX+ballrad,gridY+ballrad,0-ballrad);
+    glVertex3f(gridX+ballrad,gridY+ballrad,gridZ+ballrad);
+    glEnd();
+
+    // Render all particles
+    //glBegin(GL_POINTS);
+    for (int i = 0; i < particles.size(); i++) {
+        //glColor3f(particles[i].color.x,particles[i].color.y,particles[i].color.z);
+        //glVertex3f(particles[i].pos.x, particles[i].pos.y, particles[i].pos.z);
+        glColor4f(57.0f/255,88.0f/255,121.0f/255,0.6);
+        glPushMatrix();
+            glTranslated(particles[i].pos.x,particles[i].pos.y,particles[i].pos.z);
+            glutSolidSphere(ballrad,10,10);
+        glPopMatrix();
+    }
     
     simulator.simulate();
     
@@ -168,23 +225,24 @@ void myDisplay(void) {
 //    glReadPixels (0, 0, viewport.w, viewport.h, GL_RGB, GL_UNSIGNED_BYTE, g_video_memory_ptr);
 //    dumpFrames();
 
-    
     glFlush();
     glutSwapBuffers();					// swap buffers (we earlier set double buffer)
     }
 
 void setupParticles() {
-    for (int i = 15; i < 30; i++) {
-        for (int j = 15; j < 30; j++) {
-            for (int k = 15; k < 30; k++) {
-                Particle p(vec3(i+(rand() % 99) * 0.01,j+(rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(0,0,1),vec3(0,0,1),1,1);
-                Particle p2(vec3(i + (rand() % 99) * 0.01,j + (rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(0,0,1),vec3(1,0,0),1,1);
-                Particle p3(vec3(i+(rand() % 99) * 0.01,j+(rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(0,0,1),vec3(0,0,1),1,1);
-                Particle p4(vec3(i + (rand() % 99) * 0.01,j + (rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(0,0,1),vec3(0,0,1),1,1);
-                Particle p5(vec3(i+(rand() % 99) * 0.01,j+(rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(0,0,1),vec3(0,0,1),1,1);
-                Particle p6(vec3(i + (rand() % 99) * 0.01,j + (rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(0,0,1),vec3(0,0,1),1,1);
-                Particle p7(vec3(i+(rand() % 99) * 0.01,j+(rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(0,0,1),vec3(0,0,1),1,1);
-                Particle p8(vec3(i + (rand() % 99) * 0.01,j + (rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(0,0,1),vec3(0,0,1),1,1);
+    for (int i = 6; i < 10; i++) {
+        for (int j = 0; j < 10; j++) {
+            for (int k = 0; k < 10; k++) {
+                //(rand() % 99) * 0.01;
+                Particle p(vec3(i+(rand() % 50)*0.01,j+(rand() % 50)*0.01,k+(rand() % 50)*0.01),vec3(0,0,0),vec3(0,0,1),vec3(0,0,1),1,1);
+                Particle p2(vec3(i+1-(rand() % 50)*0.01,j+(rand() % 50)*0.01,k+(rand() % 50)*0.01),vec3(0,0,0),vec3(0,0,1),vec3(1,0,0),1,1);
+                Particle p3(vec3(i+(rand() % 50)*0.01,j+1-(rand() % 50)*0.01,k+(rand() % 50)*0.01),vec3(0,0,0),vec3(0,0,1),vec3(1,0,0),1,1);
+                Particle p4(vec3(i+(rand() % 50)*0.01,j+(rand() % 50)*0.01,k+1-(rand() % 50)*0.01),vec3(0,0,0),vec3(0,0,1),vec3(0,0,1),1,1);
+                Particle p5(vec3(i+(rand() % 50)*0.01,j+1-(rand() % 50)*0.01,k+1-(rand() % 50)*0.01),vec3(0,0,0),vec3(0,0,1),vec3(1,0,0),1,1);
+                Particle p6(vec3(i+1-(rand() % 50)*0.01,j+1-(rand() % 50)*0.01,k+(rand() % 50)*0.01),vec3(0,0,0),vec3(0,0,1),vec3(1,0,0),1,1);
+                Particle p7(vec3(i+1-(rand() % 50)*0.01,j+(rand() % 50)*0.01,k+1-(rand() % 50)*0.01),vec3(0,0,0),vec3(0,0,1),vec3(1,0,0),1,1);
+                Particle p8(vec3(i+1-(rand() % 50)*0.01,j+1-(rand() % 50)*0.01,k+1-(rand() % 50)*0.01),vec3(0,0,0),vec3(0,0,1),vec3(1,0,0),1,1);
+                 
                 particles.push_back(p);
                 particles.push_back(p2);
 //                particles.push_back(p3);
@@ -269,7 +327,7 @@ int main(int argc, char *argv[]) {
     glutInit(&argc, argv);
     
     //This tells glut to use a double-buffered window with red, green, and blue channels
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH | GLUT_ALPHA);
     
     // Initalize theviewport size
     viewport.w = 1000;
@@ -282,7 +340,7 @@ int main(int argc, char *argv[]) {
     
     // Currently grid size hard coded in,
     // later parsed from command line
-    gridX = 30, gridY = 30, gridZ = 30;
+    gridX = 10, gridY = 10, gridZ = 10;
     cellSize = 1;
     
     setupParticles();

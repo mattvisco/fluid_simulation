@@ -11,14 +11,11 @@
 
 Grid::Grid(float xdim, float ydim, float zdim, float h) {
     Grid::xdim = xdim;
-    cout << xdim;
     Grid::ydim = ydim;
-    cout << ydim;
     Grid::zdim = zdim;
-    cout << zdim;
     Grid::h = h;
     
-    flip = false; // flip == true, Pic == false
+    flip = true; // flip == true, Pic == false
     
     Grid::xcells = (int)xdim/h;
     Grid::ycells = (int)ydim/h;
@@ -82,6 +79,10 @@ void Grid::setupParticleGrid() {
         vec3 cell = getCell((*particles)[i]);
         Particle copy(&((*particles)[i]));
         particleCopies[(int)cell.x][(int)cell.y][(int)cell.z].push_back(copy);
+        if (cell.x == 9 && cell.y == 9 && cell.z ==0 ) {
+            cout << "Particle position:" << " x: " << copy.pos.x << " y: " << copy.pos.y << " z: " << copy.pos.z << "\n";
+            cout << "Old Particle Velocity: " << " x: " << copy.vel.x << " y: " << copy.vel.y << " z: " << copy.vel.z << "\n";
+        }
         
         // TODO -- Have this also iterate over some solid array
         gridComponents[(int)cell.x][(int)cell.y][(int)cell.z] = FLUID;
@@ -206,15 +207,7 @@ vector<vec3> Grid::getvec3Neighbors(vec3 p) {
 }
 
 // get divergence of cell u
-// not sure if forward difference is right
 float Grid::divergence(vec3 u) {
-    int i = (int)u.x;
-    int j = (int)u.y;
-    int k = (int)u.z;
-    return xvelocityOld[i+1][j][k]-xvelocityOld[i][j][k] + yvelocityOld[i][j+1][k]-yvelocityOld[i][j][k] + zvelocityOld[i][j][k+1]-zvelocityOld[i][j][k];
-}
-
-float Grid::divergenceNew(vec3 u) {
     int i = (int)u.x;
     int j = (int)u.y;
     int k = (int)u.z;
@@ -226,94 +219,15 @@ void Grid::computePressure(){
     int size=fluids.size();
     double x[size];
     double b[size];
-    double a[size][size];
-    
-    // zero out x
-    for (int i = 0; i < size; i++) {
-        x[i] = 0.0;
-    }
-    
-    // for each row in a, store negative how many neighbors are fluid and 1s in columns of neighbors
-    for (int i = 0; i < size; i++) {
-        for (int j = 0; j < size; j++) {
-            if (isNeighbor(fluids[i], fluids[j])) {
-                a[i][j] = 1.0;
-            } else {
-                a[i][j] = 0.0;
-            }
-        }
-        a[i][i] = -1.0*getNonSolidNeighbors(fluids[i]);
-    }
-    
-    // for each entry in b
-    for (int i = 0; i < size; i++) {
-        b[i] = (DENSITY*h/timeStep)*divergence(fluids[i]) - getAirNeighbors(fluids[i])*PATM;
-    }
-    
-    // set up arrays for sparse matrix solve
-    //pvalue - total nonzero column entries so far - initial 0
-    //ivalue - row number of values in value
-    vector<int> pvaluevect;
-    int count = 0;
-    pvaluevect.push_back(count);
-    vector<double> valuevect;
-    vector<int> ivaluevect;
-    // go by columns
-    for (int j = 0; j < size; j++) {
-        int numInCol = 0;
-        for (int i = 0; i < size; i++) {
-            if (a[i][j] != 0) {
-                numInCol++;
-                valuevect.push_back(a[i][j]);
-                ivaluevect.push_back(i);
-            }
-        }
-        count += numInCol;
-        pvaluevect.push_back(count);
-    }
-    
-    // store these in arrays
-    int* pvalue = &pvaluevect[0];
-    int* ivalue = &ivaluevect[0];
-    double* value = &valuevect[0];
-    
-    int status;
-    double *null = (double *) NULL ;
-    void *Symbolic, *Numeric ;
-    status = umfpack_di_symbolic (size, size, pvalue, ivalue, value, &Symbolic, null, null) ;
-    status = umfpack_di_numeric (pvalue, ivalue, value, Symbolic, &Numeric, null, null);
-    umfpack_di_free_symbolic (&Symbolic) ;
-    status = umfpack_di_solve (UMFPACK_A, pvalue, ivalue, value, x, b, Numeric, null, null) ;
-    umfpack_di_free_numeric (&Numeric) ;
-    
-    // store new pressure values
-    setupVector(pressures, xcells, ycells, zcells);
-    for (int s = 0; s < size; s++) {
-        int i = (int)fluids[s].x;
-        int j = (int)fluids[s].y;
-        int k = (int)fluids[s].z;
-        pressures[i][j][k] = x[s];
-    }
-}
-
-void Grid::computePressureNew(){
-    vector<vec3> fluids = getFluids();
-    int size=fluids.size();
-    double x[size];
-    double b[size];
     vector<vector<double > > a;
     a.resize(size);
-    for (int i = 0; i < size; i++) {
-        a[i].resize(size);
-    }
-    
-    // zero out x
-    for (int i = 0; i < size; i++) {
-        x[i] = 0.0;
-    }
     
     // for each row in a, store negative how many neighbors are fluid and 1s in columns of neighbors
     for (int i = 0; i < size; i++) {
+        // zero out x
+        x[i] = 0.0;
+        b[i] = (DENSITY*h/timeStep)*divergence(fluids[i]) - getAirNeighbors(fluids[i])*PATM;
+        a[i].resize(size);
         for (int j = 0; j < size; j++) {
             if (isNeighbor(fluids[i], fluids[j])) {
                 a[i][j] = 1.0;
@@ -322,11 +236,6 @@ void Grid::computePressureNew(){
             }
         }
         a[i][i] = -1.0*getNonSolidNeighbors(fluids[i]);
-    }
-    
-    // for each entry in b
-    for (int i = 0; i < size; i++) {
-        b[i] = (DENSITY*h/timeStep)*divergenceNew(fluids[i]) - getAirNeighbors(fluids[i])*PATM;
     }
     
     // set up arrays for sparse matrix solve
@@ -372,6 +281,9 @@ void Grid::computePressureNew(){
         int j = (int)fluids[s].y;
         int k = (int)fluids[s].z;
         pressures[i][j][k] = x[s];
+        if (j == 9 && i == 9 && k == 0) {
+            cout << "i: " << i << " j: " << j << " k: " << k << " pressure i,j,k: " << pressures[i][j][k] << " pressure i-1,j,k: " << pressures[i-1][j][k] << " pressure i,j-1,k: " << pressures[i][j-1][k] << " pressure i,j,k-1: " << pressures[i][j][k-1] <<  "\n";
+        }
     }
 }
 
@@ -524,6 +436,9 @@ void Grid::computeNonAdvection() {
         for (int j=0; j < ycells; j++) {
             for (int k=0; k < zcells; k++) {
                 xvelocityNew[i][j][k] = xvelocityOld[i][j][k];
+                if (j == 9 && i == 9 && k == 0) {
+                    cout << "i: " << i << "j: " << j << "k: " <<  k << " xvelocityOld[i][j][k]: " << xvelocityNew[i][j][k] << "\n";
+                }
             }
         }
     }
@@ -534,6 +449,9 @@ void Grid::computeNonAdvection() {
             for (int k=0; k < zcells; k++) {
                 yvelocityNew[i][j][k] = yvelocityOld[i][j][k] + computeGravityToAdd();
                 //yvelocityOld[i][j][k] += computeGravityToAdd();
+                if (j == 9 && i == 9 && k == 0) {
+                    cout << "i: " << i << "j: " << j << "k: " <<  k << " yvelocityOld[i][j][k]: " << yvelocityNew[i][j][k] << "\n";
+                }
             }
         }
     }
@@ -543,14 +461,29 @@ void Grid::computeNonAdvection() {
         for (int j=0; j < ycells; j++) {
             for (int k=1; k < zcells; k++) {
                 zvelocityNew[i][j][k] = zvelocityOld[i][j][k];
+                if (j == 9 && i == 9 && k ==1) {
+                    cout << "i: " << i << "j: " << j << "k: " <<  k << " zvelocityOld[i][j][k]: " << zvelocityNew[i][j][k] << "\n";
+                }
             }
         }
     }
     
     extrapolateVelocities();
+    vector<vec3> fluids = getFluids();
+    int size=fluids.size();
+    int i,j,k;
+    for (int s = 0; s < size; s++) {
+        i = fluids[s].x;
+        j = fluids[s].y;
+        k = fluids[s].z;
+     
+        if (i == 9 && j == 9 && k == 0) {
+               cout << "Old divergence" << "\n";
+            cout << i << " " << j << " " << k << " " << divergence(vec3(i,j,k)) << "\n";
+        }
+    }
     
-    //computePressure();
-    computePressureNew();
+    computePressure();
     
     // x
     for (int i=1; i < xcells; i++) {
@@ -562,6 +495,9 @@ void Grid::computeNonAdvection() {
                 //                    xvelocityNew[i][j][k] = xvelocityOld[i][j][k];
                 //                }
                 xvelocityNew[i][j][k] += KPRES*computePressureToAdd(i,j,k,X_AXIS);
+                if (j == 9 && i == 9 && k == 0) {
+                    cout << "i: " << i << "j: " << j << "k: " <<  k << " xvelocityNew[i][j][k]: " << xvelocityNew[i][j][k] << "\n";
+                }
 //                if (flip) {
 //                    xvelocityNew[i][j][k] -= xvelocityOld[i][j][k];
 //                }
@@ -580,6 +516,9 @@ void Grid::computeNonAdvection() {
                 //                }
                 //yvelocityNew[i][j][k] += computeGravityToAdd();
                 yvelocityNew[i][j][k] += KPRES*computePressureToAdd(i,j,k,Y_AXIS);
+                if (j == 9 && i == 9 && k == 0) {
+                    cout << "i: " << i << "j: " << j << "k: " <<  k << " yvelocityNew[i][j][k]: " << yvelocityNew[i][j][k] << "\n";
+                }
 //                if (flip) {
 //                    yvelocityNew[i][j][k] -= yvelocityOld[i][j][k];
 //                }
@@ -596,6 +535,9 @@ void Grid::computeNonAdvection() {
                 //                    zvelocityNew[i][j][k] = zvelocityOld[i][j][k];
                 //                }
                 zvelocityNew[i][j][k] += KPRES*computePressureToAdd(i,j,k,Z_AXIS);
+                if (j == 9 && i == 9 && k ==1) {
+                    cout << "i: " << i << "j: " << j << "k: " <<  k << " zvelocityNew[i][j][k]: " << zvelocityNew[i][j][k] << "\n";
+                }
 //                if (flip) {
 //                    zvelocityNew[i][j][k] -= zvelocityOld[i][j][k];
 //                }
@@ -711,10 +653,14 @@ float Grid::getInterpolatedValue(float x, float y, float z, vector<vector<vector
 
 void Grid::updateParticleVels() {
     for (int i = 0; i < (*particles).size(); i++) {
+        vec3 cell = getCell((*particles)[i]);
         if (flip) {
             (*particles)[i].vel += getInterpolatedVelocityNew((*particles)[i].pos) - getInterpolatedVelocityOld((*particles)[i].pos);
         } else {
             (*particles)[i].vel = getInterpolatedVelocityNew((*particles)[i].pos);
+        }
+        if (cell.x == 9 && cell.y == 9 && cell.z ==0 ) {
+            cout << "New Particle Velocity: " << " x: " << (*particles)[i].vel.x << " y: " << (*particles)[i].vel.y << " z: " << (*particles)[i].vel.z << "\n";
         }
     }
 }

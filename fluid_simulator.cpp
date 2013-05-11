@@ -22,25 +22,33 @@ void Simulator::simulate() {
     grid.storeOldVelocities(); // stores the weighted averages of particles at grid points
     grid.computeTimeStep();
     grid.computeNonAdvection();
-    //grid.extrapolateVelocities();
+    grid.extrapolateVelocities();
+    checkDivergence();
     grid.updateParticleVels();
     moveParticles();
+    cout << "\n";
 
     //pressureColorMap(); // Testing purposes only
 }
 
 // Testing purposes only
 void Simulator::checkDivergence() {
-    for (int i = 0; i < grid.xcells; i++) {
-        for (int j = 0; j < grid.ycells; j++) {
-            for (int k = 0; k < grid.zcells; k++) {
-//                cout << "i,j,k pressure: " << grid.pressures[i][j][k] << "\n";
-//                //cout << "i,j+1,k pressure: " << grid.pressures[i][j+1][k] << "\n";
-//                
-//                cout << grid.xvelocityNew[i+1][j][k] << " - " << grid.xvelocityNew[i][j][k] << " + " << grid.yvelocityNew[i][j+1][k] << " - " << grid.yvelocityNew[i][j][k] << " + " << grid.zvelocityNew[i][j][k+1] << " - " << grid.zvelocityNew[i][j][k] << " = ";
-//                cout << grid.xvelocityNew[i+1][j][k]-grid.xvelocityNew[i][j][k] + grid.yvelocityNew[i][j+1][k]-grid.yvelocityNew[i][j][k] + grid.zvelocityNew[i][j][k+1]-grid.zvelocityNew[i][j][k] << "----- i: " << i << " j: " << j << " k: " << k << "\n\n";
-            }
+
+    vector<vec3> fluids = grid.getFluids();
+    int size=fluids.size();
+    int i,j,k;
+    for (int s = 0; s < size; s++) {
+        i = fluids[s].x;
+        j = fluids[s].y;
+        k = fluids[s].z;
+        
+        if (i == 9 && j == 9 && k == 0) {
+            cout << "New divergence" << "\n";
+            cout << i << " " << j << " " << k << " " << grid.divergence(vec3(i,j,k)) << "\n";
         }
+            //cout << "x: " << grid.xvelocityNew[i+1][j][k]-grid.xvelocityNew[i][j][k]<< "\n";
+        //cout << "y: " << grid.yvelocityNew[i][j+1][k]-grid.yvelocityNew[i][j][k]<< "\n";
+        //cout << "z: " << grid.zvelocityNew[i][j][k+1]-grid.zvelocityNew[i][j][k]<< "\n";
     }
 }
 
@@ -89,42 +97,42 @@ void Simulator::moveParticles() {
         // move the particles in the normal direction outside the solid
         // reverse and dampen normal velocity
         bool dampen = false;
-        if ((*particles)[i].pos.x > grid.xdim) {
-            (*particles)[i].pos.x = grid.xdim;
+        if ((*particles)[i].pos.x >= grid.xdim) {
+            (*particles)[i].pos.x = grid.xdim-0.01;
             (*particles)[i].vel.x *= -1;
             //(*particles)[i].vel.x *= DAMPENING;
             dampen = true;
-        } else if ((*particles)[i].pos.x < 0) {
-            (*particles)[i].pos.x = 0;
+        } else if ((*particles)[i].pos.x <= 0) {
+            (*particles)[i].pos.x = 0.01;
             (*particles)[i].vel.x *= -1;
             //(*particles)[i].vel.x *= DAMPENING;
             dampen = true;
         }
-        if ((*particles)[i].pos.y > grid.ydim) {
-            (*particles)[i].pos.y = grid.ydim;
+        if ((*particles)[i].pos.y >= grid.ydim) {
+            (*particles)[i].pos.y = grid.ydim-0.01;
             (*particles)[i].vel.y *= -1;
             //(*particles)[i].vel.y *= DAMPENING;
             dampen = true;
-        } else if ((*particles)[i].pos.y < 0) {
-            (*particles)[i].pos.y = 0;
+        } else if ((*particles)[i].pos.y <= 0) {
+            (*particles)[i].pos.y = 0.01;
             (*particles)[i].vel.y *= -1;
             //(*particles)[i].vel.y *= DAMPENING;
             dampen = true;
         }
-        if ((*particles)[i].pos.z > grid.zdim) {
-            (*particles)[i].pos.z = grid.zdim;
+        if ((*particles)[i].pos.z >= grid.zdim) {
+            (*particles)[i].pos.z = grid.zdim-0.01;
             (*particles)[i].vel.z *= -1;
             //(*particles)[i].vel.z *= DAMPENING;
             dampen = true;
-        } else if ((*particles)[i].pos.z < 0) {
-            (*particles)[i].pos.z = 0;
+        } else if ((*particles)[i].pos.z <= 0) {
+            (*particles)[i].pos.z = 0.01;
             (*particles)[i].vel.z *= -1;
             //(*particles)[i].vel.z *= DAMPENING;
             dampen = true;
         }
         
-        if (dampen) {
-            (*particles)[i].vel *= DAMPENING;
-        }
+//        if (dampen) {
+//            (*particles)[i].vel *= DAMPENING;
+//        }
     }
 }

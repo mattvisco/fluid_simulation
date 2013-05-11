@@ -46,7 +46,7 @@
 #define AIR 0
 #define FLUID 1
 #define SOLID 2
-#define PATM 1
+#define PATM 0
 #define KPRES 1
 
 
