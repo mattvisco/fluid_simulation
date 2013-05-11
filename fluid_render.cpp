@@ -165,8 +165,8 @@ void myDisplay(void) {
     simulator.simulate();
     
     // Stores Frames in a pointer to convert to Image later
-//    glReadPixels (0, 0, viewport.w, viewport.h, GL_RGB, GL_UNSIGNED_BYTE, g_video_memory_ptr);
-//    dumpFrames();
+    glReadPixels (0, 0, viewport.w, viewport.h, GL_RGB, GL_UNSIGNED_BYTE, g_video_memory_ptr);
+    dumpFrames();
 
     
     glFlush();
@@ -174,9 +174,9 @@ void myDisplay(void) {
     }
 
 void setupParticles() {
-    for (int i = 15; i < 30; i++) {
-        for (int j = 15; j < 30; j++) {
-            for (int k = 15; k < 30; k++) {
+    for (int i = 5; i < 10; i++) {
+        for (int j = 0; j < 10; j++) {
+            for (int k = 0; k < 10; k++) {
                 Particle p(vec3(i+(rand() % 99) * 0.01,j+(rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(0,0,1),vec3(0,0,1),1,1);
                 Particle p2(vec3(i + (rand() % 99) * 0.01,j + (rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(0,0,1),vec3(1,0,0),1,1);
                 Particle p3(vec3(i+(rand() % 99) * 0.01,j+(rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(0,0,1),vec3(0,0,1),1,1);
@@ -187,7 +187,7 @@ void setupParticles() {
                 Particle p8(vec3(i + (rand() % 99) * 0.01,j + (rand() % 99) * 0.01,k+(rand() % 99) * 0.01),vec3(0,0,0),vec3(0,0,1),vec3(0,0,1),1,1);
                 particles.push_back(p);
                 particles.push_back(p2);
-//                particles.push_back(p3);
+                particles.push_back(p3);
 //                particles.push_back(p4);
 //                particles.push_back(p5);
 //                particles.push_back(p6);
@@ -282,12 +282,12 @@ int main(int argc, char *argv[]) {
     
     // Currently grid size hard coded in,
     // later parsed from command line
-    gridX = 30, gridY = 30, gridZ = 30;
+    gridX = 10, gridY = 10, gridZ = 10;
     cellSize = 1;
     
     setupParticles();
     
-    //reserve_video_memory ();
+    reserve_video_memory ();
     
     initScene();							// quick function to set up scene
     

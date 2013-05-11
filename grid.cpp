@@ -18,7 +18,7 @@ Grid::Grid(float xdim, float ydim, float zdim, float h) {
     cout << zdim;
     Grid::h = h;
     
-    flip = false; // flip == true, Pic == false
+    flip = true; // flip == true, Pic == false
     
     Grid::xcells = (int)xdim/h;
     Grid::ycells = (int)ydim/h;
@@ -89,6 +89,7 @@ void Grid::setupParticleGrid() {
             maxVelocity = length((*particles)[i].vel);
         }
     }
+    fluids = getFluids();
 }
 
 // get the cell of a particle at position (x,y,z) in space
@@ -222,8 +223,7 @@ float Grid::divergenceNew(vec3 u) {
 }
 
 void Grid::computePressure(){
-    vector<vec3> fluids = getFluids();
-    int size=fluids.size();
+    int size = fluids.size();
     double x[size];
     double b[size];
     double a[size][size];
@@ -377,7 +377,7 @@ void Grid::computePressureNew(){
 
 // get all particles within a cube of size radius of a point x,y,z
 // neighbors include the cell we're in
-// radius = cell width
+// radius = cell width 
 vector<Particle> Grid::getNeighbors(float x, float y, float z, float radius) {
     vector<vector<Particle> > cellNeighbors = getCellNeighbors(x,y,z);
     vector<Particle> neighbors;
@@ -423,33 +423,38 @@ vector<vector<Particle> > Grid::getCellNeighbors(float x, float y, float z) {
 // at each velocity grid point (in center of cell faces), compute and store a weighted average of particle velocites within a cube of radius h
 void Grid::storeOldVelocities() {
     // x
-    for (int i=0; i < xcells+1; i++) {
+    for (int i=1; i < xcells; i++) {
         for (int j=0; j < ycells; j++) {
             for (int k=0; k < zcells; k++) {
-                vec3 xpt(i-0.5f, (float)j, (float)k);
-                vector<Particle> xneighbors = getNeighbors(xpt.x, xpt.y, xpt.z, h);
-                xvelocityOld[i][j][k] = weightedAverage(xneighbors, xpt, X_AXIS);
+                if (gridComponents[i][j][k] == FLUID) {
+                    vec3 xpt(i-0.5f, (float)j, (float)k);
+                    vector<Particle> xneighbors = getNeighbors(xpt.x, xpt.y, xpt.z, h);
+                    xvelocityOld[i][j][k] = weightedAverage(xneighbors, xpt, X_AXIS);
+                }
             }
         }
     }
     // y
     for (int i=0; i < xcells; i++) {
-        for (int j=0; j < ycells+1; j++) {
+        for (int j=1; j < ycells; j++) {
             for (int k=0; k < zcells; k++) {
-                vec3 ypt((float)i, j-0.5f, (float)k);
-                vector<Particle> yneighbors = getNeighbors(ypt.x, ypt.y, ypt.z, h);
-                yvelocityOld[i][j][k] = weightedAverage(yneighbors, ypt, Y_AXIS);
-                
+                if (gridComponents[i][j][k] == FLUID) {
+                    vec3 ypt((float)i, j-0.5f, (float)k);
+                    vector<Particle> yneighbors = getNeighbors(ypt.x, ypt.y, ypt.z, h);
+                    yvelocityOld[i][j][k] = weightedAverage(yneighbors, ypt, Y_AXIS);
+                }
             }
         }
     }
     // z
     for (int i=0; i < xcells; i++) {
         for (int j=0; j < ycells; j++) {
-            for (int k=0; k < zcells+1; k++) {
-                vec3 zpt((float)i, (float)j, k-0.5f); // took out the -0.5f, might want to put it back in
-                vector<Particle> zneighbors = getNeighbors(zpt.x, zpt.y, zpt.z, h);
-                zvelocityOld[i][j][k] = weightedAverage(zneighbors, zpt, Z_AXIS);
+            for (int k=1; k < zcells; k++) {
+                if (gridComponents[i][j][k] == FLUID) {
+                    vec3 zpt((float)i, (float)j, k-0.5f);
+                    vector<Particle> zneighbors = getNeighbors(zpt.x, zpt.y, zpt.z, h);
+                    zvelocityOld[i][j][k] = weightedAverage(zneighbors, zpt, Z_AXIS);
+                }
             }
         }
     }
@@ -532,7 +537,9 @@ void Grid::computeNonAdvection() {
     for (int i=0; i < xcells; i++) {
         for (int j=1; j < ycells; j++) {
             for (int k=0; k < zcells; k++) {
-                yvelocityNew[i][j][k] = yvelocityOld[i][j][k] + computeGravityToAdd();
+                if (gridComponents[i][j][k] == FLUID) {
+                    yvelocityNew[i][j][k] = yvelocityOld[i][j][k] + computeGravityToAdd();
+                }
                 //yvelocityOld[i][j][k] += computeGravityToAdd();
             }
         }
@@ -556,15 +563,10 @@ void Grid::computeNonAdvection() {
     for (int i=1; i < xcells; i++) {
         for (int j=0; j < ycells; j++) {
             for (int k=0; k < zcells; k++) {
-                //                if (flip) {
-                //                    xvelocityNew[i][j][k] = 0.0f;
-                //                } else {
-                //                    xvelocityNew[i][j][k] = xvelocityOld[i][j][k];
-                //                }
-                xvelocityNew[i][j][k] += KPRES*computePressureToAdd(i,j,k,X_AXIS);
-//                if (flip) {
-//                    xvelocityNew[i][j][k] -= xvelocityOld[i][j][k];
-//                }
+                xvelocityNew[i][j][k] += computePressureToAdd(i,j,k,X_AXIS);
+                if (gridComponents[i][j][k] == FLUID) {
+                    xvelocityNew[i][j][k] += computePressureToAdd(i,j,k,X_AXIS);
+                }
             }
         }
     }
@@ -572,17 +574,9 @@ void Grid::computeNonAdvection() {
     for (int i=0; i < xcells; i++) {
         for (int j=1; j < ycells; j++) {
             for (int k=0; k < zcells; k++) {
-                //                if (flip) {
-                //                    yvelocityNew[i][j][k] += KPRES*computePressureToAdd(i,j,k,Y_AXIS);
-                //                    yvelocityNew[i][j][k] -= yvelocityOld[i][j][k];
-                //                } else {
-                //                    yvelocityNew[i][j][k] = yvelocityOld[i][j][k] + KPRES*computePressureToAdd(i,j,k,Y_AXIS);
-                //                }
-                //yvelocityNew[i][j][k] += computeGravityToAdd();
-                yvelocityNew[i][j][k] += KPRES*computePressureToAdd(i,j,k,Y_AXIS);
-//                if (flip) {
-//                    yvelocityNew[i][j][k] -= yvelocityOld[i][j][k];
-//                }
+                if (gridComponents[i][j][k] == FLUID) {
+                    yvelocityNew[i][j][k] += computePressureToAdd(i,j,k,Y_AXIS);
+                }
             }
         }
     }
@@ -590,15 +584,9 @@ void Grid::computeNonAdvection() {
     for (int i=0; i < xcells; i++) {
         for (int j=0; j < ycells; j++) {
             for (int k=1; k < zcells; k++) {
-                //                if (flip) {
-                //                    zvelocityNew[i][j][k] = 0.0f;
-                //                } else {
-                //                    zvelocityNew[i][j][k] = zvelocityOld[i][j][k];
-                //                }
-                zvelocityNew[i][j][k] += KPRES*computePressureToAdd(i,j,k,Z_AXIS);
-//                if (flip) {
-//                    zvelocityNew[i][j][k] -= zvelocityOld[i][j][k];
-//                }
+                if (gridComponents[i][j][k] == FLUID) {
+                    zvelocityNew[i][j][k] += computePressureToAdd(i,j,k,Z_AXIS);
+                }
             }
         }
     }
@@ -641,11 +629,12 @@ float Grid::computePressureToAdd(int i, int j, int k, int AXIS) {
 }
 
 void Grid::computeTimeStep() {
-    if (maxVelocity > 0) {
-        timeStep = std::min(KCFL*h/maxVelocity,DEFAULT);
-    } else {
-        timeStep = DEFAULT;
-    }
+    timeStep = DEFAULT;
+//    if (maxVelocity > 0) {
+//        timeStep = std::min(KCFL*h/maxVelocity,DEFAULT);
+//    } else {
+//        timeStep = DEFAULT;
+//    }
 }
 
 vec3 Grid::getInterpolatedVelocityNew(vec3 pt) {

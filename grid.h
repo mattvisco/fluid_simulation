@@ -39,14 +39,14 @@
 #define GRAVITY -9.81f // meters/second^2
 #define DENSITY 1.0f //
 
-#define KCFL 5 // constant for CFL condition for timestep
+#define KCFL 1 // constant for CFL condition for timestep
 #define DEFAULT 1.0f/10.0f
 #define DAMPENING 0.5f
 #define NONE -1
 #define AIR 0
 #define FLUID 1
 #define SOLID 2
-#define PATM 1
+#define PATM 0
 #define KPRES 1
 
 
@@ -69,6 +69,7 @@ public:
     float timeStep; // in milliseconds ?
     float maxVelocity;
     bool flip;
+    vector<vec3> fluids;
     vector<Particle>* particles;
     vector<vector<vector<float> > > pressures; 
     vector<vector<vector<float> > > xvelocityOld; 
