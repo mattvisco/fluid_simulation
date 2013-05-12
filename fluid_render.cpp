@@ -132,8 +132,15 @@ void dumpFrames() {
 
 //orient the camera
 void camera() {
-    glTranslatef(-11.5+xtrans,-17.5+ytrans,zoom-70.0);
-    glRotatef(xrot - 10,1.0,0.0,0.0);
+    // Use with 30x30x30
+//    glTranslatef(-11.5+xtrans,-17.5+ytrans,zoom-70.0);
+//    glRotatef(xrot - 10,1.0,0.0,0.0);
+//    glRotatef(yrot,0.0,1.0,0.0);
+//    glRotatef(zrot,0.0,0.0,1.0);
+    
+    // Use with 10x10x10
+    glTranslatef(-5.0+xtrans,0.0+ytrans,zoom-30.0);
+    glRotatef(xrot+25,1.0,0.0,0.0);
     glRotatef(yrot,0.0,1.0,0.0);
     glRotatef(zrot,0.0,0.0,1.0);
 }
@@ -222,8 +229,8 @@ void myDisplay(void) {
     simulator.simulate();
     
     // Stores Frames in a pointer to convert to Image later
-    glReadPixels (0, 0, viewport.w, viewport.h, GL_RGB, GL_UNSIGNED_BYTE, g_video_memory_ptr);
-    dumpFrames();
+    //glReadPixels (0, 0, viewport.w, viewport.h, GL_RGB, GL_UNSIGNED_BYTE, g_video_memory_ptr);
+    //dumpFrames();
 
     glFlush();
     glutSwapBuffers();					// swap buffers (we earlier set double buffer)
@@ -345,7 +352,7 @@ int main(int argc, char *argv[]) {
     
     setupParticles();
     
-    reserve_video_memory ();
+    //reserve_video_memory ();
     
     initScene();							// quick function to set up scene
     

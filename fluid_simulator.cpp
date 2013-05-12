@@ -26,7 +26,7 @@ void Simulator::simulate() {
     checkDivergence();
     grid.updateParticleVels();
     moveParticles();
-    cout << "\n";
+    //cout << "\n";
 
     //pressureColorMap(); // Testing purposes only
 }
@@ -43,8 +43,8 @@ void Simulator::checkDivergence() {
         k = fluids[s].z;
         
         if (i == 9 && j == 9 && k == 0) {
-            cout << "New divergence" << "\n";
-            cout << i << " " << j << " " << k << " " << grid.divergence(vec3(i,j,k)) << "\n";
+            //cout << "New divergence" << "\n";
+            //cout << i << " " << j << " " << k << " " << grid.divergence(vec3(i,j,k)) << "\n";
         }
             //cout << "x: " << grid.xvelocityNew[i+1][j][k]-grid.xvelocityNew[i][j][k]<< "\n";
         //cout << "y: " << grid.yvelocityNew[i][j+1][k]-grid.yvelocityNew[i][j][k]<< "\n";

@@ -115,6 +115,7 @@ public:
     void zeroBoundaries();
     void computePressureNew();
     float divergenceNew(vec3);
+    bool bordersFluid(int, int, int, int);
 };
 
 #endif 

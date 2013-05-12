@@ -80,8 +80,8 @@ void Grid::setupParticleGrid() {
         Particle copy(&((*particles)[i]));
         particleCopies[(int)cell.x][(int)cell.y][(int)cell.z].push_back(copy);
         if (cell.x == 9 && cell.y == 9 && cell.z ==0 ) {
-            cout << "Particle position:" << " x: " << copy.pos.x << " y: " << copy.pos.y << " z: " << copy.pos.z << "\n";
-            cout << "Old Particle Velocity: " << " x: " << copy.vel.x << " y: " << copy.vel.y << " z: " << copy.vel.z << "\n";
+            //cout << "Particle position:" << " x: " << copy.pos.x << " y: " << copy.pos.y << " z: " << copy.pos.z << "\n";
+            //cout << "Old Particle Velocity: " << " x: " << copy.vel.x << " y: " << copy.vel.y << " z: " << copy.vel.z << "\n";
         }
         
         // TODO -- Have this also iterate over some solid array
@@ -145,6 +145,19 @@ bool Grid::isNeighbor(vec3 p1, vec3 p2) {
     bool front = (i1 == i2) && (j1 == j2) && (k1 == k2-1);
     bool back = (i1 == i2) && (j1 == j2) && (k1 == k2+1);
     return left || right || top || bottom || back || front;
+}
+
+bool Grid::bordersFluid(int i, int j, int k, int AXIS) {
+    if (gridComponents[i][j][k] == FLUID) {
+        return true;
+    } if (AXIS == X_AXIS && gridComponents[i-1][j][k] == FLUID) {
+        return true;
+    } if (AXIS == Y_AXIS && gridComponents[i][j-1][k] == FLUID) {
+        return true;
+    } if (AXIS == Z_AXIS && gridComponents[i][j][k-1] == FLUID) {
+        return true;
+    }
+    return false;
 }
 
 
@@ -283,7 +296,7 @@ void Grid::computePressure(){
         int k = (int)fluids[s].z;
         pressures[i][j][k] = x[s];
         if (j == 9 && i == 9 && k == 0) {
-            cout << "i: " << i << " j: " << j << " k: " << k << " pressure i,j,k: " << pressures[i][j][k] << " pressure i-1,j,k: " << pressures[i-1][j][k] << " pressure i,j-1,k: " << pressures[i][j-1][k] << " pressure i,j,k-1: " << pressures[i][j][k-1] <<  "\n";
+            //cout << "i: " << i << " j: " << j << " k: " << k << " pressure i,j,k: " << pressures[i][j][k] << " pressure i-1,j,k: " << pressures[i-1][j][k] << " pressure i,j-1,k: " << pressures[i][j-1][k] << " pressure i,j,k-1: " << pressures[i][j][k-1] <<  "\n";
         }
     }
 }
@@ -339,7 +352,7 @@ void Grid::storeOldVelocities() {
     for (int i=1; i < xcells; i++) {
         for (int j=0; j < ycells; j++) {
             for (int k=0; k < zcells; k++) {
-                if (gridComponents[i][j][k] == FLUID) {
+                if (bordersFluid(i,j,k, X_AXIS)) {
                     vec3 xpt(i-0.5f, (float)j, (float)k);
                     vector<Particle> xneighbors = getNeighbors(xpt.x, xpt.y, xpt.z, h);
                     xvelocityOld[i][j][k] = weightedAverage(xneighbors, xpt, X_AXIS);
@@ -351,7 +364,7 @@ void Grid::storeOldVelocities() {
     for (int i=0; i < xcells; i++) {
         for (int j=1; j < ycells; j++) {
             for (int k=0; k < zcells; k++) {
-                if (gridComponents[i][j][k] == FLUID) {
+                if (bordersFluid(i,j,k, Y_AXIS)) {
                     vec3 ypt((float)i, j-0.5f, (float)k);
                     vector<Particle> yneighbors = getNeighbors(ypt.x, ypt.y, ypt.z, h);
                     yvelocityOld[i][j][k] = weightedAverage(yneighbors, ypt, Y_AXIS);
@@ -363,7 +376,7 @@ void Grid::storeOldVelocities() {
     for (int i=0; i < xcells; i++) {
         for (int j=0; j < ycells; j++) {
             for (int k=1; k < zcells; k++) {
-                if (gridComponents[i][j][k] == FLUID) {
+                if (bordersFluid(i,j,k,Z_AXIS)) {
                     vec3 zpt((float)i, (float)j, k-0.5f);
                     vector<Particle> zneighbors = getNeighbors(zpt.x, zpt.y, zpt.z, h);
                     zvelocityOld[i][j][k] = weightedAverage(zneighbors, zpt, Z_AXIS);
@@ -443,7 +456,7 @@ void Grid::computeNonAdvection() {
             for (int k=0; k < zcells; k++) {
                 xvelocityNew[i][j][k] = xvelocityOld[i][j][k];
                 if (j == 9 && i == 9 && k == 0) {
-                    cout << "i: " << i << "j: " << j << "k: " <<  k << " xvelocityOld[i][j][k]: " << xvelocityNew[i][j][k] << "\n";
+                    //cout << "i: " << i << "j: " << j << "k: " <<  k << " xvelocityOld[i][j][k]: " << xvelocityNew[i][j][k] << "\n";
                 }
             }
         }
@@ -453,12 +466,12 @@ void Grid::computeNonAdvection() {
     for (int i=0; i < xcells; i++) {
         for (int j=1; j < ycells; j++) {
             for (int k=0; k < zcells; k++) {
-                if (gridComponents[i][j][k] == FLUID) {
+                if (bordersFluid(i,j,k,Y_AXIS)) {
                     yvelocityNew[i][j][k] = yvelocityOld[i][j][k] + computeGravityToAdd();
                 }
                 //yvelocityOld[i][j][k] += computeGravityToAdd();
                 if (j == 9 && i == 9 && k == 0) {
-                    cout << "i: " << i << "j: " << j << "k: " <<  k << " yvelocityOld[i][j][k]: " << yvelocityNew[i][j][k] << "\n";
+                    //cout << "i: " << i << "j: " << j << "k: " <<  k << " yvelocityOld[i][j][k]: " << yvelocityNew[i][j][k] << "\n";
                 }
             }
         }
@@ -470,14 +483,14 @@ void Grid::computeNonAdvection() {
             for (int k=1; k < zcells; k++) {
                 zvelocityNew[i][j][k] = zvelocityOld[i][j][k];
                 if (j == 9 && i == 9 && k ==1) {
-                    cout << "i: " << i << "j: " << j << "k: " <<  k << " zvelocityOld[i][j][k]: " << zvelocityNew[i][j][k] << "\n";
+                    //cout << "i: " << i << "j: " << j << "k: " <<  k << " zvelocityOld[i][j][k]: " << zvelocityNew[i][j][k] << "\n";
                 }
             }
         }
     }
     
     extrapolateVelocities();
-    vector<vec3> fluids = getFluids();
+    
     int size=fluids.size();
     int i,j,k;
     for (int s = 0; s < size; s++) {
@@ -486,8 +499,8 @@ void Grid::computeNonAdvection() {
         k = fluids[s].z;
      
         if (i == 9 && j == 9 && k == 0) {
-               cout << "Old divergence" << "\n";
-            cout << i << " " << j << " " << k << " " << divergence(vec3(i,j,k)) << "\n";
+            //cout << "Old divergence" << "\n";
+            //cout << i << " " << j << " " << k << " " << divergence(vec3(i,j,k)) << "\n";
         }
     }
     
@@ -497,12 +510,11 @@ void Grid::computeNonAdvection() {
     for (int i=1; i < xcells; i++) {
         for (int j=0; j < ycells; j++) {
             for (int k=0; k < zcells; k++) {
-                xvelocityNew[i][j][k] += computePressureToAdd(i,j,k,X_AXIS);
-                if (gridComponents[i][j][k] == FLUID) {
+                if (bordersFluid(i,j,k,X_AXIS)) {
                     xvelocityNew[i][j][k] += computePressureToAdd(i,j,k,X_AXIS);
                 }
                 if (j == 9 && i == 9 && k == 0) {
-                    cout << "i: " << i << "j: " << j << "k: " <<  k << " xvelocityNew[i][j][k]: " << xvelocityNew[i][j][k] << "\n";
+                    //cout << "i: " << i << "j: " << j << "k: " <<  k << " xvelocityNew[i][j][k]: " << xvelocityNew[i][j][k] << "\n";
                 }
             }
         }
@@ -511,11 +523,11 @@ void Grid::computeNonAdvection() {
     for (int i=0; i < xcells; i++) {
         for (int j=1; j < ycells; j++) {
             for (int k=0; k < zcells; k++) {
-                if (gridComponents[i][j][k] == FLUID) {
+                if (bordersFluid(i,j,k,Y_AXIS)) {
                     yvelocityNew[i][j][k] += computePressureToAdd(i,j,k,Y_AXIS);
                 }
                 if (j == 9 && i == 9 && k == 0) {
-                    cout << "i: " << i << "j: " << j << "k: " <<  k << " yvelocityNew[i][j][k]: " << yvelocityNew[i][j][k] << "\n";
+                    //cout << "i: " << i << "j: " << j << "k: " <<  k << " yvelocityNew[i][j][k]: " << yvelocityNew[i][j][k] << "\n";
                 }
             }
         }
@@ -524,11 +536,11 @@ void Grid::computeNonAdvection() {
     for (int i=0; i < xcells; i++) {
         for (int j=0; j < ycells; j++) {
             for (int k=1; k < zcells; k++) {
-                if (gridComponents[i][j][k] == FLUID) {
+                if (bordersFluid(i,j,k,Z_AXIS)) {
                     zvelocityNew[i][j][k] += computePressureToAdd(i,j,k,Z_AXIS);
                 }
                 if (j == 9 && i == 9 && k ==1) {
-                    cout << "i: " << i << "j: " << j << "k: " <<  k << " zvelocityNew[i][j][k]: " << zvelocityNew[i][j][k] << "\n";
+                    //cout << "i: " << i << "j: " << j << "k: " <<  k << " zvelocityNew[i][j][k]: " << zvelocityNew[i][j][k] << "\n";
                 }
             }
         }
@@ -637,6 +649,8 @@ float Grid::getInterpolatedValue(float x, float y, float z, vector<vector<vector
     
     if (totalWeight > 0) {
         value = value / totalWeight;
+    } else {
+        cout << "PROLLLY CUTTTY" << "\n";
     }
     return value;
 }
@@ -650,7 +664,7 @@ void Grid::updateParticleVels() {
             (*particles)[i].vel = getInterpolatedVelocityNew((*particles)[i].pos);
         }
         if (cell.x == 9 && cell.y == 9 && cell.z ==0 ) {
-            cout << "New Particle Velocity: " << " x: " << (*particles)[i].vel.x << " y: " << (*particles)[i].vel.y << " z: " << (*particles)[i].vel.z << "\n";
+            //cout << "New Particle Velocity: " << " x: " << (*particles)[i].vel.x << " y: " << (*particles)[i].vel.y << " z: " << (*particles)[i].vel.z << "\n";
         }
     }
 }
