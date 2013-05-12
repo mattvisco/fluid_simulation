@@ -80,8 +80,8 @@ void Grid::setupParticleGrid() {
         Particle copy(&((*particles)[i]));
         particleCopies[(int)cell.x][(int)cell.y][(int)cell.z].push_back(copy);
         if (cell.x == 9 && cell.y == 9 && cell.z ==0 ) {
-            //cout << "Particle position:" << " x: " << copy.pos.x << " y: " << copy.pos.y << " z: " << copy.pos.z << "\n";
-            //cout << "Old Particle Velocity: " << " x: " << copy.vel.x << " y: " << copy.vel.y << " z: " << copy.vel.z << "\n";
+            cout << "Particle position:" << " x: " << copy.pos.x << " y: " << copy.pos.y << " z: " << copy.pos.z << "\n";
+            cout << "Old Particle Velocity: " << " x: " << copy.vel.x << " y: " << copy.vel.y << " z: " << copy.vel.z << "\n";
         }
         
         // TODO -- Have this also iterate over some solid array
@@ -148,6 +148,7 @@ bool Grid::isNeighbor(vec3 p1, vec3 p2) {
 }
 
 bool Grid::bordersFluid(int i, int j, int k, int AXIS) {
+    return true;
     if (gridComponents[i][j][k] == FLUID) {
         return true;
     } if (AXIS == X_AXIS && gridComponents[i-1][j][k] == FLUID) {
@@ -352,6 +353,7 @@ void Grid::storeOldVelocities() {
     for (int i=1; i < xcells; i++) {
         for (int j=0; j < ycells; j++) {
             for (int k=0; k < zcells; k++) {
+                xvelocityOld[i][j][k] = 0;
                 if (bordersFluid(i,j,k, X_AXIS)) {
                     vec3 xpt(i-0.5f, (float)j, (float)k);
                     vector<Particle> xneighbors = getNeighbors(xpt.x, xpt.y, xpt.z, h);
@@ -364,6 +366,7 @@ void Grid::storeOldVelocities() {
     for (int i=0; i < xcells; i++) {
         for (int j=1; j < ycells; j++) {
             for (int k=0; k < zcells; k++) {
+                yvelocityOld[i][j][k] = 0;
                 if (bordersFluid(i,j,k, Y_AXIS)) {
                     vec3 ypt((float)i, j-0.5f, (float)k);
                     vector<Particle> yneighbors = getNeighbors(ypt.x, ypt.y, ypt.z, h);
@@ -376,6 +379,7 @@ void Grid::storeOldVelocities() {
     for (int i=0; i < xcells; i++) {
         for (int j=0; j < ycells; j++) {
             for (int k=1; k < zcells; k++) {
+                zvelocityOld[i][j][k] = 0;
                 if (bordersFluid(i,j,k,Z_AXIS)) {
                     vec3 zpt((float)i, (float)j, k-0.5f);
                     vector<Particle> zneighbors = getNeighbors(zpt.x, zpt.y, zpt.z, h);
@@ -466,8 +470,9 @@ void Grid::computeNonAdvection() {
     for (int i=0; i < xcells; i++) {
         for (int j=1; j < ycells; j++) {
             for (int k=0; k < zcells; k++) {
+                yvelocityNew[i][j][k] = yvelocityOld[i][j][k];
                 if (bordersFluid(i,j,k,Y_AXIS)) {
-                    yvelocityNew[i][j][k] = yvelocityOld[i][j][k] + computeGravityToAdd();
+                    yvelocityNew[i][j][k] += computeGravityToAdd();
                 }
                 //yvelocityOld[i][j][k] += computeGravityToAdd();
                 if (j == 9 && i == 9 && k == 0) {
@@ -490,6 +495,7 @@ void Grid::computeNonAdvection() {
     }
     
     extrapolateVelocities();
+    zeroBoundaries();
     
     int size=fluids.size();
     int i,j,k;
@@ -610,8 +616,29 @@ vec3 Grid::getInterpolatedVelocityOld(vec3 pt) {
 
 float Grid::getInterpolatedValue(float x, float y, float z, vector<vector<vector<float> > > values) {
     int i = floor(x);
+    if (i < 0) {
+        i = 0;
+        x = 0;
+    } if (i > xcells) {
+        i = xcells;
+        x = xcells;
+    }
     int j = floor(y);
+    if (j < 0) {
+        j = 0;
+        y = 0;
+    }if (j > ycells) {
+        j = ycells;
+        y = ycells;
+    }
     int k = floor(z);
+    if (k < 0) {
+        k = 0;
+        z = 0;
+    }if (k > zcells) {
+        k = zcells;
+        z = zcells;
+    }
     float value = 0.0f;
     float totalWeight = 0.0f;
     if (i >= 0 && j >= 0 && k >= 0 && i < values.size() && j < values[i].size() && k < values[i][j].size()) {
@@ -649,8 +676,6 @@ float Grid::getInterpolatedValue(float x, float y, float z, vector<vector<vector
     
     if (totalWeight > 0) {
         value = value / totalWeight;
-    } else {
-        cout << "PROLLLY CUTTTY" << "\n";
     }
     return value;
 }
@@ -664,7 +689,7 @@ void Grid::updateParticleVels() {
             (*particles)[i].vel = getInterpolatedVelocityNew((*particles)[i].pos);
         }
         if (cell.x == 9 && cell.y == 9 && cell.z ==0 ) {
-            //cout << "New Particle Velocity: " << " x: " << (*particles)[i].vel.x << " y: " << (*particles)[i].vel.y << " z: " << (*particles)[i].vel.z << "\n";
+            cout << "New Particle Velocity: " << " x: " << (*particles)[i].vel.x << " y: " << (*particles)[i].vel.y << " z: " << (*particles)[i].vel.z << "\n";
         }
     }
 }

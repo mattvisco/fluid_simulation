@@ -253,11 +253,11 @@ void setupParticles() {
                 particles.push_back(p);
                 particles.push_back(p2);
                 particles.push_back(p3);
-//                particles.push_back(p4);
-//                particles.push_back(p5);
-//                particles.push_back(p6);
-//                particles.push_back(p7);
-//                particles.push_back(p8);
+                particles.push_back(p4);
+                particles.push_back(p5);
+                particles.push_back(p6);
+                particles.push_back(p7);
+                particles.push_back(p8);
             }
         }
     }

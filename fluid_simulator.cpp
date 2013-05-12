@@ -26,7 +26,7 @@ void Simulator::simulate() {
     checkDivergence();
     grid.updateParticleVels();
     moveParticles();
-    //cout << "\n";
+    cout << "\n";
 
     //pressureColorMap(); // Testing purposes only
 }
@@ -37,6 +37,14 @@ void Simulator::checkDivergence() {
     vector<vec3> fluids = grid.getFluids();
     int size=fluids.size();
     int i,j,k;
+    for (i = 0; i < grid.xdim; i++) {
+        for (j = 0; j < grid.ydim; j++) {
+            for (k = 0; k < grid.zdim; k++) {
+                bool isFluid = (grid.gridComponents[i][j][k] == FLUID);
+                //cout << i << " " << j << " " << k << " " << grid.divergence(vec3(i,j,k)) << " if fluid? " << isFluid << "\n";
+            }
+        }
+    }
     for (int s = 0; s < size; s++) {
         i = fluids[s].x;
         j = fluids[s].y;
@@ -46,6 +54,7 @@ void Simulator::checkDivergence() {
             //cout << "New divergence" << "\n";
             //cout << i << " " << j << " " << k << " " << grid.divergence(vec3(i,j,k)) << "\n";
         }
+        //cout << i << " " << j << " " << k << " " << grid.divergence(vec3(i,j,k)) << "\n";
             //cout << "x: " << grid.xvelocityNew[i+1][j][k]-grid.xvelocityNew[i][j][k]<< "\n";
         //cout << "y: " << grid.yvelocityNew[i][j+1][k]-grid.yvelocityNew[i][j][k]<< "\n";
         //cout << "z: " << grid.zvelocityNew[i][j][k+1]-grid.zvelocityNew[i][j][k]<< "\n";
@@ -127,12 +136,12 @@ void Simulator::moveParticles() {
         } else if ((*particles)[i].pos.z <= 0) {
             (*particles)[i].pos.z = 0.01;
             (*particles)[i].vel.z *= -1;
-            //(*particles)[i].vel.z *= DAMPENING;
+            (*particles)[i].vel.z *= DAMPENING;
             dampen = true;
         }
         
-//        if (dampen) {
-//            (*particles)[i].vel *= DAMPENING;
-//        }
+        if (dampen) {
+            (*particles)[i].vel *= DAMPENING;
+        }
     }
 }
